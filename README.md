@@ -43,7 +43,7 @@ Berikut adalah beberapa tangkapan layar (screenshot) untuk melihat bagaimana apl
 ![Tampilan Ringkasan](Screenshot/Ringkasan.png)
 
 ### Menu Atur
-![Tampilan Atur](Screenshots/Atur.png)
+![Tampilan Atur](Screenshot/Atur.png)
 
 ## ✨ Cara Pakai 
 
