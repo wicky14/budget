@@ -241,6 +241,14 @@
         #reset-pin-btn:hover {
             color: var(--expense-color);
         }
+        
+        /* WA Share Button style override */
+        button.share-wa-btn:disabled {
+            background-color: #ccc !important;
+            cursor: not-allowed;
+            box-shadow: none !important;
+            transform: none !important;
+        }
 
         /* --- DAILY SUMMARY STYLING --- */
         #daily-summary-box {
@@ -439,6 +447,11 @@
         #export-import-card {
             border-left: 5px solid #2196F3; /* Warna biru untuk manajemen data */
         }
+        
+        /* WA Setting Card */
+        #whatsapp-setting-card {
+             border-left: 5px solid #25D366; 
+        }
 
         /* Custom style for small image in list */
         .note-image-icon {
@@ -589,6 +602,18 @@
             <h2>Pengaturan Data ⚙️</h2>
             <p style="color: #777; margin-top: -10px; margin-bottom: 25px;">Kelola dan migrasi data transaksi Anda.</p>
             
+            <div id="whatsapp-setting-card" class="monthly-card" style="border-left: 5px solid #25D366;">
+                <span class="month-header">Pengaturan Berbagi WhatsApp 📱</span>
+                <form id="whatsapp-setting-form">
+                    <div class="form-group">
+                        <label for="whatsapp-number">Nomor WhatsApp Tujuan (Format Internasional: 628xxxxxxxx):</label>
+                        <input type="text" id="whatsapp-number" placeholder="Contoh: 62812345678" inputmode="tel" style="width: 100%;">
+                    </div>
+                    <button type="submit" class="submit-btn" style="background-color: #25D366; font-size: 16px; padding: 10px;">
+                        Simpan Nomor WA
+                    </button>
+                </form>
+            </div>
             <div id="pin-change-card" class="monthly-card" style="border-left: 5px solid #ff5722;">
                 <span class="month-header">Ubah PIN Akses</span>
                 <form id="pin-change-form">
@@ -677,6 +702,11 @@
         const pinChangeForm = document.getElementById('pin-change-form'); 
         const resetPinBtn = document.getElementById('reset-pin-btn'); 
 
+        // NEW: WhatsApp elements
+        const whatsappSettingForm = document.getElementById('whatsapp-setting-form');
+        const whatsappNumberInput = document.getElementById('whatsapp-number');
+        let storedWhatsappNumber = localStorage.getItem('whatsappNumber') || '';
+
         dateInput.valueAsDate = new Date();
         typeFilterSelect.addEventListener('change', loadNotes);
 
@@ -729,7 +759,7 @@
         });
 
         /* ----------------------
-        |  AMOUNT INPUT & OTHER LOGIC (UNCHANGED)
+        |  INPUT & IMAGE LOGIC 
         | ---------------------- */
 
         amountInput.addEventListener('input', (e) => {
@@ -848,6 +878,10 @@
             modal.style.display = 'block';
         }
 
+        /* ----------------------
+        |  SUMMARY & RENDER LOGIC
+        | ---------------------- */
+
         function updateDailySummary(allNotes) {
             let totalIncome = 0;
             let totalExpense = 0;
@@ -938,13 +972,37 @@
             monthlyList.innerHTML = '';
             const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             
-            const monthKeys = Object.keys(monthlyData).sort().reverse(); 
-
+            // Urutkan key dari yang PALING LAMA ke yang PALING BARU (ASCENDING) untuk penghitungan kumulatif
+            const monthKeys = Object.keys(monthlyData).sort(); 
+            
             if (monthKeys.length === 0) {
                 emptyMessageMonthly.style.display = 'block';
                 return;
             }
             emptyMessageMonthly.style.display = 'none';
+            
+            let cumulativeBalance = 0;
+            let cumulativeSavingsBalance = 0; 
+            
+            // Loop pertama untuk menghitung saldo kumulatif
+            monthKeys.forEach(key => {
+                const data = monthlyData[key];
+                const tabunganBalance = data.tabunganIncome - data.tabunganExpense;
+                const totalBalance = data.income - data.expense; 
+
+                cumulativeBalance += totalBalance;
+                cumulativeSavingsBalance += tabunganBalance;
+
+                // Simpan nilai kumulatif di objek data 
+                data.cumulativeBalance = cumulativeBalance;
+                data.cumulativeSavingsBalance = cumulativeSavingsBalance;
+            });
+            
+            // Urutkan key dari yang PALING BARU ke yang PALING LAMA (DESCENDING) untuk tampilan
+            monthKeys.reverse(); 
+            
+            // Cek apakah nomor WA sudah disetel
+            const isWhatsappSet = storedWhatsappNumber && storedWhatsappNumber.length >= 8;
 
             monthKeys.forEach(key => {
                 const [year, monthIndex] = key.split('-');
@@ -954,6 +1012,10 @@
 
                 const bulananBalance = data.bulananIncome - data.bulananExpense;
                 const tabunganBalance = data.tabunganIncome - data.tabunganExpense;
+                
+                // Nilai Kumulatif yang sudah dihitung di loop sebelumnya
+                const finalCumulativeBalance = data.cumulativeBalance;
+                const finalCumulativeSavingsBalance = data.cumulativeSavingsBalance;
 
 
                 const listItem = document.createElement('li');
@@ -962,7 +1024,7 @@
                     <span class="month-header">${monthName} ${year}</span>
                     <div class="month-details">
                         <div style="font-weight: 700;">
-                            <span>Total Bulanan:</span>
+                            <span>Total Bulanan (Bulan Ini):</span>
                             <span class="${bulananBalance >= 0 ? 'positive' : 'negative'}">${bulananBalance >= 0 ? '+' : ''} Rp ${formatRupiah(bulananBalance)}</span>
                         </div>
                         <div style="padding-left: 10px;">
@@ -975,14 +1037,14 @@
                         </div>
                         
                         <div style="font-weight: 700;">
-                            <span>Total Tabungan:</span>
+                            <span>Total Tabungan (Bulan Ini):</span>
                             <span class="${tabunganBalance >= 0 ? 'positive' : 'negative'}">${tabunganBalance >= 0 ? '+' : ''} Rp ${formatRupiah(tabunganBalance)}</span>
                         </div>
                         <div style="padding-left: 10px;">
                             <span>Masuk Tabungan:</span>
                             <span class="income">+ Rp ${formatRupiah(data.tabunganIncome)}</span>
                         </div>
-                        <div style="padding-left: 10px;">
+                        <div style="padding-left: 10px; border-bottom: 1px dashed #ddd; padding-bottom: 10px; margin-bottom: 5px;">
                             <span>Keluar Tabungan:</span>
                             <span class="expense">- Rp ${formatRupiah(data.tabunganExpense)}</span>
                         </div>
@@ -991,7 +1053,25 @@
                             <span>**Saldo Total Bulan Ini:**</span>
                             <span class="${balance >= 0 ? 'positive' : 'negative'}">${balance >= 0 ? '+' : ''} Rp ${formatRupiah(balance)}</span>
                         </div>
+                        
+                        <div class="balance" style="margin-top: 15px;">
+                            <span>**Saldo Tabungan Kumulatif:**</span>
+                            <span class="${finalCumulativeSavingsBalance >= 0 ? 'positive' : 'negative'}">${finalCumulativeSavingsBalance >= 0 ? '+' : ''} Rp ${formatRupiah(finalCumulativeSavingsBalance)}</span>
+                        </div>
+                        <div class="balance">
+                            <span>**Saldo Total Keseluruhan (Kumulatif):**</span>
+                            <span class="${finalCumulativeBalance >= 0 ? 'positive' : 'negative'}">${finalCumulativeBalance >= 0 ? '+' : ''} Rp ${formatRupiah(finalCumulativeBalance)}</span>
+                        </div>
                     </div>
+                    
+                    <button type="button" 
+                        class="submit-btn share-wa-btn" 
+                        style="margin-top: 15px; background-color: #25D366; font-size: 16px; padding: 10px;" 
+                        data-month-key="${key}"
+                        ${isWhatsappSet ? '' : 'disabled title="Atur nomor WhatsApp di tab Atur dulu"'}
+                        onclick="shareMonthlySummaryToWa(this)">
+                        ${isWhatsappSet ? `Bagikan Ringkasan ke WA 💬` : `Setel Nomor WA Dulu!`}
+                    </button>
                 `;
                 monthlyList.appendChild(listItem);
             });
@@ -1114,7 +1194,7 @@
         });
 
         /* ----------------------
-        |  EXPORT CSV LOGIC (UNCHANGED)
+        |  EXPORT CSV LOGIC 
         | ---------------------- */
 
         window.exportMonthlySummary = function() {
@@ -1161,16 +1241,11 @@
         |  EXPORT/IMPORT RAW DATA & CLEAR (TAB ATUR)
         | ---------------------- */
 
-        /**
-         * Ekspor data mentah (JSON) dari localStorage.
-         * ALERT DIHAPUS agar bisa digunakan di Reset PIN tanpa notifikasi.
-         */
         window.exportRawData = function() {
             const notesJSON = localStorage.getItem('budgetNotes');
             const allNotes = notesJSON ? JSON.parse(notesJSON) : [];
 
             if (allNotes.length === 0) {
-                // Return null jika tidak ada data untuk diekspor.
                 return null; 
             }
 
@@ -1181,12 +1256,10 @@
             link.setAttribute("href", URL.createObjectURL(blob));
             link.setAttribute("download", `DataAnggaranMentah_${dateStamp}.json`);
             
-            // Simulasikan klik untuk download
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             
-            // Alert hanya ditampilkan di halaman "Atur"
             if (document.getElementById('settings-view').classList.contains('active')) {
                  alert("Data mentah (JSON) berhasil diekspor! Gunakan file ini untuk Impor data di perangkat lain.");
             }
@@ -1194,9 +1267,6 @@
             return notesJSON;
         }
 
-        /**
-         * Impor data mentah dari file JSON, menimpa data yang ada.
-         */
         window.importRawData = function(event) {
             const file = event.target.files[0];
             if (!file) {
@@ -1230,9 +1300,6 @@
             reader.readAsText(file);
         }
 
-        /**
-         * Menghapus semua data transaksi dari localStorage.
-         */
         window.clearAllData = function() {
             if (confirm('SANGAT PENTING: Anda yakin ingin MENGHAPUS SEMUA DATA TRANSAKSI Anda? Tindakan ini tidak dapat dibatalkan. Pastikan Anda sudah melakukan Ekspor (Backup)!')) {
                 localStorage.removeItem('budgetNotes');
@@ -1242,6 +1309,140 @@
             }
         }
         
+        /* ----------------------
+        |  WHATSAPP SHARING LOGIC
+        | ---------------------- */
+        
+        whatsappSettingForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newNumber = whatsappNumberInput.value.trim().replace(/[^0-9]/g, ''); 
+
+            if (!newNumber || newNumber.length < 8) {
+                alert('Mohon masukkan Nomor WhatsApp yang valid (minimal 8 digit).');
+                return;
+            }
+            
+            storedWhatsappNumber = newNumber;
+            localStorage.setItem('whatsappNumber', storedWhatsappNumber);
+            alert('Nomor WhatsApp berhasil disimpan!');
+            
+            loadNotes(); 
+        });
+        
+        /**
+         * Mengambil dan memformat detail transaksi untuk bulan tertentu.
+         */
+        function getMonthlyTransactionDetails(monthKey, allNotes) {
+            const notesInMonth = allNotes.filter(note => {
+                // Konversi ISO string (note.date) atau timestamp (note.id) ke format YYYY-MM
+                const date = new Date(note.date || parseInt(note.id)); 
+                const year = date.getFullYear();
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const noteMonthKey = `${year}-${month}`;
+                return noteMonthKey === monthKey;
+            });
+
+            // Urutkan catatan berdasarkan tanggal dan ID (terbaru di atas)
+            notesInMonth.sort((a, b) => {
+                const dateA = new Date(a.date || parseInt(a.id));
+                const dateB = new Date(b.date || parseInt(b.id));
+                return dateB.getTime() - dateA.getTime();
+            });
+
+            let detailMessage = "*Detail Transaksi:*\n";
+
+            if (notesInMonth.length === 0) {
+                return detailMessage + "   - Tidak ada catatan detail.";
+            }
+
+            notesInMonth.forEach(note => {
+                const sign = note.type === 'masuk' ? '+' : '-';
+                const groupLabel = note.group === 'tabungan' ? '(Tabungan)' : '(Bulanan)';
+                const date = new Date(note.date || parseInt(note.id));
+                const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                
+                const line = `   [${formattedDate}] *${note.note}* ${groupLabel}: ${sign}Rp ${formatRupiah(note.amount)}\n`;
+                detailMessage += line;
+            });
+            
+            return detailMessage;
+        }
+
+        /**
+         * Memformat pesan dan memicu berbagi ke WhatsApp.
+         */
+        window.shareMonthlySummaryToWa = function(buttonElement) {
+            if (!storedWhatsappNumber || storedWhatsappNumber.length < 8) {
+                alert('Nomor WhatsApp tujuan belum diatur. Silakan atur di tab "Atur" terlebih dahulu.');
+                return;
+            }
+
+            const monthKey = buttonElement.getAttribute('data-month-key');
+            
+            // Ambil semua data ringkasan
+            const notesJSON = localStorage.getItem('budgetNotes');
+            const allNotes = notesJSON ? JSON.parse(notesJSON) : [];
+            const monthlyData = calculateMonthlySummary(allNotes);
+            
+            const data = monthlyData[monthKey];
+            if (!data) return; 
+            
+            // 1. Dapatkan Detail Transaksi
+            const transactionDetails = getMonthlyTransactionDetails(monthKey, allNotes);
+
+            // Ulangi logika perhitungan kumulatif untuk mendapatkan nilai final
+            const monthKeysOrdered = Object.keys(monthlyData).sort();
+            let currentCumulativeBalance = 0;
+            let currentCumulativeSavingsBalance = 0;
+            
+            for (const key of monthKeysOrdered) {
+                 const currentData = monthlyData[key];
+                 const totalBalance = currentData.income - currentData.expense;
+                 const tabunganBalance = currentData.tabunganIncome - currentData.tabunganExpense;
+                 
+                 currentCumulativeBalance += totalBalance;
+                 currentCumulativeSavingsBalance += tabunganBalance;
+                 
+                 if (key === monthKey) break; 
+            }
+
+            const [year, monthIndex] = monthKey.split('-');
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const monthName = monthNames[parseInt(monthIndex, 10) - 1];
+
+            const balance = data.income - data.expense;
+            const bulananBalance = data.bulananIncome - data.bulananExpense;
+            const tabunganBalance = data.tabunganIncome - data.tabunganExpense;
+
+            // Membuat pesan format
+            const message = `*📊 Ringkasan Anggaran Bulan ${monthName} ${year}*\n\n` +
+                            `➡️ *Pemasukan Total:* +Rp ${formatRupiah(data.income)}\n` +
+                            `⬅️ *Pengeluaran Total:* -Rp ${formatRupiah(data.expense)}\n` +
+                            `---------------------------------\n` +
+                            `*Saldo Bulan Ini:* ${balance >= 0 ? '+' : ''}Rp ${formatRupiah(balance)}\n\n` +
+                            
+                            `*Detail Grup Bulanan* (Masuk: +Rp ${formatRupiah(data.bulananIncome)}, Keluar: -Rp ${formatRupiah(data.bulananExpense)})\n` +
+                            `   > *Saldo Bulanan:* ${bulananBalance >= 0 ? '+' : ''}Rp ${formatRupiah(bulananBalance)}\n\n` +
+                            
+                            `*Detail Grup Tabungan* (Masuk: +Rp ${formatRupiah(data.tabunganIncome)}, Keluar: -Rp ${formatRupiah(data.tabunganExpense)})\n` +
+                            `   > *Saldo Tabungan Bulan Ini:* ${tabunganBalance >= 0 ? '+' : ''}Rp ${formatRupiah(tabunganBalance)}\n` +
+                            `   > *Saldo Tabungan Kumulatif:* ${currentCumulativeSavingsBalance >= 0 ? '+' : ''}Rp ${formatRupiah(currentCumulativeSavingsBalance)}\n\n` +
+
+                            `*Saldo Total Kumulatif Keseluruhan:* ${currentCumulativeBalance >= 0 ? '+' : ''}Rp ${formatRupiah(currentCumulativeBalance)}\n` +
+                            `=================================\n\n` +
+                            
+                            `${transactionDetails}\n` + 
+                            `=================================\n` +
+                            `_Dibagikan dari Catatan Anggaran Sederhana_ 📝`;
+
+            // Membuat URL WhatsApp
+            const encodedMessage = encodeURIComponent(message);
+            const waUrl = `https://wa.me/${storedWhatsappNumber}?text=${encodedMessage}`;
+            
+            window.open(waUrl, '_blank');
+        }
+
+
         /* ----------------------
         |  PIN MANAGEMENT & AUTHENTICATION LOGIC
         | ---------------------- */
@@ -1287,7 +1488,6 @@
             }
         }
         
-        // UPDATED RESET PIN LOGIC
         window.handlePinReset = function() {
             const confirmReset = confirm(
                 "PERINGATAN! Anda akan mereset PIN. Tindakan ini akan:\n" +
@@ -1300,18 +1500,19 @@
                 return;
             }
             
-            // 1. Export Data Mentah (akan men-trigger download tanpa alert)
             exportRawData(); 
             
-            // 2. Hapus semua data transaksi & PIN lama
             localStorage.removeItem('budgetNotes');
             localStorage.removeItem('appPin'); 
+            localStorage.removeItem('whatsappNumber'); // Hapus juga nomor WA lama
 
-            // 3. Buat PIN baru
             const newPin = generatePin();
             setPin(newPin);
+            
+            // Reset WA input to clear 
+            storedWhatsappNumber = '';
+            if (whatsappNumberInput) whatsappNumberInput.value = '';
 
-            // 4. Update UI dan instruksi
             authOverlay.style.backgroundColor = '#fff3e0'; 
             authInstruction.textContent = `RESET BERHASIL. PIN BARU Anda adalah: ${newPin}.`;
             authStatus.textContent = "Data lama sudah dihapus. Silakan gunakan PIN baru di atas untuk masuk.";
@@ -1320,7 +1521,6 @@
             pinInput.value = newPin;
             pinInput.focus();
             
-            // Alert sederhana yang hanya menyampaikan PIN baru dan penghapusan data
             alert(`PENTING! PIN baru Anda adalah: ${newPin}\n\nData lama di aplikasi telah dihapus. Harap catat PIN baru ini dan cek folder download Anda untuk file backup data (JSON).`);
         }
         
@@ -1408,6 +1608,9 @@
              // 2. Sembunyikan konten utama dan mulai autentikasi
              appContainer.style.display = 'none';
              tabs.style.display = 'none';
+             
+             // 3. Load WA Number to Input
+             if (whatsappNumberInput) whatsappNumberInput.value = storedWhatsappNumber;
 
              setTimeout(authenticateBiometric, 500); 
         });
