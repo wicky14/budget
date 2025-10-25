@@ -417,6 +417,23 @@
         #export-import-card {
             border-left: 5px solid #2196F3; /* Warna biru untuk manajemen data */
         }
+
+        /* Custom style for small image in list */
+        .note-image-icon {
+            width: 30px; 
+            height: 30px; 
+            object-fit: cover; 
+            border-radius: 3px; 
+            margin-left: 10px; 
+            cursor: pointer;
+            border: 1px solid #ddd;
+            padding: 2px;
+            transition: transform 0.1s;
+        }
+        
+        .note-image-icon:hover {
+            transform: scale(1.05);
+        }
         
     </style>
 </head>
@@ -453,8 +470,22 @@
                     <label for="note">Catatan Singkat:</label>
                     <input type="text" id="note" placeholder="Contoh: Gaji bulan ini / Beli kopi" required>
                 </div>
+                
+                <div class="form-group" style="border: 1px dashed #ddd; padding: 10px; border-radius: 8px; margin-top: 20px;">
+                    <label style="font-weight: 400; color: #555;">Bukti Transaksi (Opsional):</label>
+                    
+                    <input type="file" id="image-input" accept="image/*" style="display: none;">
+                    
+                    <button type="button" class="submit-btn" id="capture-image-btn" style="background-color: #007bff; font-size: 16px; padding: 8px; margin-bottom: 10px;" onclick="document.getElementById('image-input').click()">
+                        Tambah Foto 📸
+                    </button>
 
-                <button type="submit" class="submit-btn">Tambahkan Catatan ✨</button>
+                    <div id="image-preview-container" style="display: none; text-align: center; margin-top: 10px;">
+                        <img id="image-preview" src="" style="max-width: 100%; max-height: 150px; border-radius: 5px; margin-bottom: 5px;">
+                        <button type="button" onclick="removeImage()" style="color: var(--expense-color); background: none; border: none; font-size: 0.9em; cursor: pointer;">Hapus Foto 🗑️</button>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn" style="margin-top: 20px;">Tambahkan Catatan ✨</button>
             </form>
 
             <div id="daily-summary-box">
@@ -521,6 +552,11 @@
         </div>
     </div>
     
+    <div id="image-modal" style="display:none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.9);">
+      <span style="position: absolute; top: 15px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer;" onclick="document.getElementById('image-modal').style.display='none';">&times;</span>
+      <img id="modal-image" src="" alt="Bukti Transaksi Penuh" style="margin: auto; display: block; width: 80%; max-width: 700px; max-height: 90vh; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    </div>
+    
     <div id="tabs">
         <button class="tab-btn active" data-tab="daily-view">
             <span>📝</span>
@@ -553,9 +589,123 @@
         const tabButtons = document.querySelectorAll('.tab-btn');
         const views = document.querySelectorAll('.view-content');
 
+        // Image elements
+        const imageInput = document.getElementById('image-input');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const captureImageBtn = document.getElementById('capture-image-btn');
+        let currentImageBase64 = null; // Menyimpan Base64 gambar saat ini
+        
         // Set default date to today's date on load
         dateInput.valueAsDate = new Date();
         typeFilterSelect.addEventListener('change', loadNotes);
+
+        /* ----------------------
+        |  IMAGE HANDLING LOGIC 
+        | ---------------------- */
+
+        /**
+         * Mengkompresi file gambar yang dipilih menggunakan Canvas API.
+         * @param {File} file - File gambar yang akan dikompres.
+         * @param {number} quality - Kualitas kompresi JPEG (0.0 hingga 1.0).
+         * @returns {Promise<string>} String Base64 dari gambar yang dikompresi.
+         */
+        function compressImage(file, quality = 0.7) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800; // Batasi lebar maksimum
+                        const MAX_HEIGHT = 800; // Batasi tinggi maksimum
+                        
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Sesuaikan dimensi agar gambar tidak terlalu besar
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Konversi kembali ke Base64 dengan kompresi JPEG
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                        resolve(compressedBase64);
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        imageInput.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                
+                // Batas keras file mentah 5MB
+                if (file.size > 1024 * 5000) { 
+                     alert('File gambar terlalu besar. Batas maksimal file mentah adalah 5MB.');
+                     imageInput.value = '';
+                     removeImage();
+                     return;
+                }
+
+                try {
+                    captureImageBtn.textContent = 'Memproses...';
+                    captureImageBtn.disabled = true;
+
+                    // Panggil fungsi kompresi
+                    const compressedBase64 = await compressImage(file, 0.7); 
+
+                    currentImageBase64 = compressedBase64;
+                    imagePreview.src = currentImageBase64;
+                    imagePreviewContainer.style.display = 'block';
+                    captureImageBtn.textContent = 'Ganti Foto 🔄';
+                    captureImageBtn.style.backgroundColor = '#0056b3';
+                    
+                } catch(error) {
+                    alert('Gagal memproses gambar. Silakan coba gambar lain.');
+                    console.error(error);
+                    removeImage();
+                } finally {
+                    captureImageBtn.disabled = false;
+                }
+                
+            } else {
+                removeImage();
+            }
+        });
+
+        window.removeImage = function() {
+            currentImageBase64 = null;
+            imageInput.value = ''; 
+            imagePreview.src = '';
+            imagePreviewContainer.style.display = 'none';
+            captureImageBtn.textContent = 'Tambah Foto 📸';
+            captureImageBtn.style.backgroundColor = '#007bff';
+        }
+
+        window.showFullImage = function(base64Data) {
+            const modal = document.getElementById('image-modal');
+            const modalImage = document.getElementById('modal-image');
+            
+            modalImage.src = base64Data;
+            modal.style.display = 'block';
+        }
 
 
         /* ----------------------
@@ -676,15 +826,22 @@
 
             const transactionDate = note.date ? new Date(note.date) : new Date(parseInt(note.id)); 
 
+            // Tampilkan gambar jika ada
+            const imageHtml = note.image ? 
+                `<img src="${note.image}" alt="Bukti Transaksi" class="note-image-icon" onclick="showFullImage('${note.image}')">` : '';
+
             listItem.innerHTML = `
                 <div class="note-details">
                     <div class="note-type">${typeLabel} (${transactionDate.toLocaleDateString('id-ID')})</div>
                     <div class="note-amount ${note.type}">${sign} Rp ${formatRupiah(note.amount)}</div>
                     <div class="note-description">${note.note}</div>
                 </div>
-                <button class="delete-btn" onclick="deleteNote('${note.id}')" title="Hapus Catatan">
-                    ✖️
-                </button>
+                <div style="display: flex; align-items: center;">
+                    ${imageHtml}
+                    <button class="delete-btn" onclick="deleteNote('${note.id}')" title="Hapus Catatan" style="margin-left: 10px;">
+                        ✖️
+                    </button>
+                </div>
             `;
             return listItem;
         }
@@ -765,7 +922,10 @@
                 notesToDisplay = allNotes.filter(note => note.type === typeFilter);
             }
 
-            notesToDisplay.sort((a, b) => new Date(b.date || parseInt(b.id)) - new Date(a.date || parseInt(a.id))); 
+            // --- START: PERUBAHAN PENTING UNTUK URUTAN INPUT TERBARU ---
+            // Urutkan berdasarkan ID (timestamp) secara descending (Terbaru dulu).
+            notesToDisplay.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+            // --- END: PERUBAHAN PENTING ---
             
             notesList.innerHTML = ''; 
             if (notesToDisplay.length === 0) {
@@ -853,7 +1013,8 @@
                 type: type,
                 amount: amount,
                 note: noteText,
-                date: new Date(transactionDate).toISOString() 
+                date: new Date(transactionDate).toISOString(),
+                image: currentImageBase64 
             };
 
             saveNote(newNote);
@@ -864,6 +1025,8 @@
             dateInput.valueAsDate = new Date();
             amountInput.value = ''; 
             typeFilterSelect.value = 'all';
+
+            removeImage(); // Hapus gambar dari pratinjau setelah submit
 
             loadNotes();
             changeTab('daily-view'); 
