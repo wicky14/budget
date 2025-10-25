@@ -226,6 +226,21 @@
         button.submit-btn:active {
              transform: translateY(-1px); 
         }
+        
+        /* RESET PIN BUTTON STYLING (NEW) */
+        #reset-pin-btn {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 0.9em;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: color 0.2s;
+            text-decoration: underline;
+        }
+        #reset-pin-btn:hover {
+            color: var(--expense-color);
+        }
 
         /* --- DAILY SUMMARY STYLING --- */
         #daily-summary-box {
@@ -454,16 +469,22 @@
             Ketuk untuk Autentikasi Biometrik 👆
         </button>
         
-        <div id="pin-input-container" style="display: none; margin-top: 20px; width: 80%; max-width: 350px;">
-            <input type="password" id="pin-input" placeholder="Masukkan PIN 6 digit" maxlength="6" inputmode="numeric" style="padding: 10px; flex-grow: 1; text-align: center; font-size: 18px; border-radius: 8px 0 0 8px; border: 1px solid #ddd; border-right: none;">
-            <button id="pin-submit-btn" style="padding: 10px 20px; background-color: var(--secondary-color); color: white; border: none; border-radius: 0 8px 8px 0; margin-left: -1px; cursor: pointer;">
-                Buka
+        <div id="pin-input-container" style="display: none; margin-top: 20px; width: 80%; max-width: 350px; flex-wrap: wrap; justify-content: center;">
+            <div style="display: flex; width: 100%;">
+                <input type="password" id="pin-input" placeholder="Masukkan PIN 6 digit" maxlength="6" inputmode="numeric" style="padding: 10px; flex-grow: 1; text-align: center; font-size: 18px; border-radius: 8px 0 0 8px; border: 1px solid #ddd; border-right: none;">
+                <button id="pin-submit-btn" style="padding: 10px 20px; background-color: var(--secondary-color); color: white; border: none; border-radius: 0 8px 8px 0; margin-left: -1px; cursor: pointer;">
+                    Buka
+                </button>
+            </div>
+            
+            <button type="button" id="reset-pin-btn" onclick="handlePinReset()">
+                Lupa PIN? Reset PIN & Hapus Data
             </button>
         </div>
 
         <p id="auth-status" style="margin-top: 20px; color: var(--expense-color); font-weight: 600;">Status: Menunggu...</p>
         <p style="font-size: 0.8em; color: #aaa; max-width: 80%; margin-top: 20px;">
-            *Opsi PIN akan muncul jika Biometrik gagal.
+            *Opsi PIN akan muncul jika Biometrik gagal. Reset PIN akan **menghapus semua data** transaksi Anda dan membuat PIN baru.
         </p>
     </div>
     <div class="container">
@@ -627,7 +648,6 @@
         const amountInput = document.getElementById('amount'); 
         const typeFilterSelect = document.getElementById('type-filter');
         
-        // Group element
         const groupInput = document.getElementById('group'); 
 
         const totalIncomeEl = document.querySelector('#daily-total-income .summary-amount');
@@ -638,14 +658,13 @@
         const tabButtons = document.querySelectorAll('.tab-btn');
         const views = document.querySelectorAll('.view-content');
 
-        // Image elements
         const imageInput = document.getElementById('image-input');
         const imagePreviewContainer = document.getElementById('image-preview-container');
         const imagePreview = document.getElementById('image-preview');
         const captureImageBtn = document.getElementById('capture-image-btn');
         let currentImageBase64 = null; 
         
-        // Auth elements (UPDATED)
+        // Auth elements
         const authOverlay = document.getElementById('auth-overlay');
         const biometricAuthBtn = document.getElementById('biometric-auth-btn');
         const authStatus = document.getElementById('auth-status');
@@ -655,9 +674,9 @@
         const pinSubmitBtn = document.getElementById('pin-submit-btn');
         const appContainer = document.querySelector('.container');
         const tabs = document.getElementById('tabs');
-        const pinChangeForm = document.getElementById('pin-change-form'); // NEW
+        const pinChangeForm = document.getElementById('pin-change-form'); 
+        const resetPinBtn = document.getElementById('reset-pin-btn'); 
 
-        // Set default date to today's date on load
         dateInput.valueAsDate = new Date();
         typeFilterSelect.addEventListener('change', loadNotes);
 
@@ -666,7 +685,7 @@
         | ---------------------- */
 
         /**
-         * Formats a number into Rupiah currency string (e.g., 50.000).
+         * Formats a number into Rupiah currency string.
          */
         function formatRupiah(number) {
             const absoluteNumber = Math.abs(number);
@@ -675,16 +694,13 @@
         }
         
         /**
-         * Cleans a formatted string back to a raw number (e.g., "50.000" -> 50000).
+         * Cleans a formatted string back to a raw number.
          */
         function cleanAmount(formattedString) {
             const cleanStr = String(formattedString).replace(/\D/g, ''); 
             return parseInt(cleanStr || '0', 10);
         }
 
-        /**
-         * Function to change the active tab/view.
-         */
         function changeTab(tabId) {
             tabButtons.forEach(btn => {
                 btn.classList.remove('active');
@@ -706,8 +722,6 @@
             loadNotes(); 
         }
 
-
-        // Attach event listeners to tab buttons
         tabButtons.forEach(btn => {
             btn.addEventListener('click', () => {
                 changeTab(btn.getAttribute('data-tab'));
@@ -715,7 +729,7 @@
         });
 
         /* ----------------------
-        |  AMOUNT INPUT FORMATTING LOGIC
+        |  AMOUNT INPUT & OTHER LOGIC (UNCHANGED)
         | ---------------------- */
 
         amountInput.addEventListener('input', (e) => {
@@ -740,10 +754,6 @@
                  e.target.value = ''; 
             }
         });
-
-        /* ----------------------
-        |  IMAGE HANDLING LOGIC 
-        | ---------------------- */
 
         function compressImage(file, quality = 0.7) {
             return new Promise((resolve) => {
@@ -838,11 +848,6 @@
             modal.style.display = 'block';
         }
 
-
-        /* ----------------------
-        |  VIEW AND DATA LOGIC 
-        | ---------------------- */
-
         function updateDailySummary(allNotes) {
             let totalIncome = 0;
             let totalExpense = 0;
@@ -857,7 +862,6 @@
 
             const currentBalance = totalIncome - totalExpense;
 
-            // UPDATE TAMPILAN SALDO GLOBAL
             totalIncomeEl.textContent = `Rp ${formatRupiah(totalIncome)}`;
             totalExpenseEl.textContent = `Rp ${formatRupiah(totalExpense)}`;
             
@@ -993,6 +997,7 @@
             });
         }
 
+
         function loadNotes() {
             const notesJSON = localStorage.getItem('budgetNotes');
             const allNotes = notesJSON ? JSON.parse(notesJSON) : [];
@@ -1052,9 +1057,6 @@
             }
         }
 
-        /**
-         * Handles the form submission to add a new note.
-         */
         form.addEventListener('submit', (e) => {
             e.preventDefault();
 
@@ -1069,7 +1071,6 @@
                 return;
             }
             
-            // Peringatan Saldo Negatif
             const currentNotes = JSON.parse(localStorage.getItem('budgetNotes') || '[]');
             const totalIncome = currentNotes.filter(n => n.type === 'masuk').reduce((sum, n) => sum + n.amount, 0);
             const totalExpense = currentNotes.filter(n => n.type === 'keluar').reduce((sum, n) => sum + n.amount, 0);
@@ -1099,7 +1100,6 @@
 
             saveNote(newNote);
 
-            // Clear the form and reset date/radio/group
             form.reset();
             document.getElementById('masuk').checked = true;
             document.getElementById('group').value = 'bulanan'; 
@@ -1114,7 +1114,7 @@
         });
 
         /* ----------------------
-        |  EXPORT CSV LOGIC (Ringkasan Bulanan)
+        |  EXPORT CSV LOGIC (UNCHANGED)
         | ---------------------- */
 
         window.exportMonthlySummary = function() {
@@ -1163,13 +1163,15 @@
 
         /**
          * Ekspor data mentah (JSON) dari localStorage.
+         * ALERT DIHAPUS agar bisa digunakan di Reset PIN tanpa notifikasi.
          */
         window.exportRawData = function() {
             const notesJSON = localStorage.getItem('budgetNotes');
+            const allNotes = notesJSON ? JSON.parse(notesJSON) : [];
 
-            if (!notesJSON || JSON.parse(notesJSON).length === 0) {
-                alert("Tidak ada data transaksi untuk diekspor.");
-                return;
+            if (allNotes.length === 0) {
+                // Return null jika tidak ada data untuk diekspor.
+                return null; 
             }
 
             const blob = new Blob([notesJSON], { type: 'application/json' });
@@ -1179,11 +1181,17 @@
             link.setAttribute("href", URL.createObjectURL(blob));
             link.setAttribute("download", `DataAnggaranMentah_${dateStamp}.json`);
             
+            // Simulasikan klik untuk download
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             
-            alert("Data mentah (JSON) berhasil diekspor! Gunakan file ini untuk Impor data di perangkat lain.");
+            // Alert hanya ditampilkan di halaman "Atur"
+            if (document.getElementById('settings-view').classList.contains('active')) {
+                 alert("Data mentah (JSON) berhasil diekspor! Gunakan file ini untuk Impor data di perangkat lain.");
+            }
+
+            return notesJSON;
         }
 
         /**
@@ -1235,7 +1243,7 @@
         }
         
         /* ----------------------
-        |  PIN MANAGEMENT & AUTHENTICATION LOGIC (NEW/UPDATED)
+        |  PIN MANAGEMENT & AUTHENTICATION LOGIC
         | ---------------------- */
 
         function generatePin() {
@@ -1279,6 +1287,43 @@
             }
         }
         
+        // UPDATED RESET PIN LOGIC
+        window.handlePinReset = function() {
+            const confirmReset = confirm(
+                "PERINGATAN! Anda akan mereset PIN. Tindakan ini akan:\n" +
+                "1. **Mengekspor** data transaksi ke file backup JSON (untuk pengamanan data Anda).\n" +
+                "2. **Menghapus SEMUA** data transaksi yang ada (termasuk PIN lama) dari aplikasi.\n\n" +
+                "Lanjutkan?"
+            );
+
+            if (!confirmReset) {
+                return;
+            }
+            
+            // 1. Export Data Mentah (akan men-trigger download tanpa alert)
+            exportRawData(); 
+            
+            // 2. Hapus semua data transaksi & PIN lama
+            localStorage.removeItem('budgetNotes');
+            localStorage.removeItem('appPin'); 
+
+            // 3. Buat PIN baru
+            const newPin = generatePin();
+            setPin(newPin);
+
+            // 4. Update UI dan instruksi
+            authOverlay.style.backgroundColor = '#fff3e0'; 
+            authInstruction.textContent = `RESET BERHASIL. PIN BARU Anda adalah: ${newPin}.`;
+            authStatus.textContent = "Data lama sudah dihapus. Silakan gunakan PIN baru di atas untuk masuk.";
+            authStatus.style.color = 'var(--expense-color)';
+            
+            pinInput.value = newPin;
+            pinInput.focus();
+            
+            // Alert sederhana yang hanya menyampaikan PIN baru dan penghapusan data
+            alert(`PENTING! PIN baru Anda adalah: ${newPin}\n\nData lama di aplikasi telah dihapus. Harap catat PIN baru ini dan cek folder download Anda untuk file backup data (JSON).`);
+        }
+        
         pinSubmitBtn.addEventListener('click', validatePin);
         pinInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -1286,7 +1331,6 @@
             }
         });
         pinInput.addEventListener('input', function(e) {
-            // Hapus karakter non-digit dan batasi 6 digit
             e.target.value = e.target.value.replace(/\D/g, '').substring(0, 6);
         });
 
@@ -1314,7 +1358,6 @@
         }
 
         async function authenticateBiometric() {
-            // Cek jika API tidak didukung, langsung pindah ke PIN
             if (!window.PublicKeyCredential) {
                 switchToPinMode("Browser Anda tidak mendukung Autentikasi Biometrik.");
                 return; 
@@ -1325,7 +1368,6 @@
             biometricAuthBtn.disabled = true;
 
             try {
-                // Buat challenge acak (Hanya untuk kunci lokal)
                 const challenge = new Uint8Array(32);
                 window.crypto.getRandomValues(challenge); 
 
@@ -1341,14 +1383,12 @@
                     publicKey: credentialRequestOptions
                 });
 
-                // Jika berhasil
                 authStatus.textContent = "Autentikasi Berhasil! Membuka kunci...";
                 authStatus.style.color = 'var(--primary-color)';
                 setTimeout(unlockApp, 500);
 
             } catch (error) {
                 console.error("Autentikasi Biometrik Gagal:", error);
-                // Jika gagal/dibatalkan, pindah ke mode PIN
                 biometricAuthBtn.disabled = false;
                 switchToPinMode();
             }
@@ -1362,7 +1402,6 @@
                 const defaultPin = generatePin();
                 setPin(defaultPin);
                 
-                // Tampilkan PIN ke user
                 alert(`SELAMAT DATANG! Ini adalah PIN akses default Anda: ${defaultPin}\n\nCATAT PIN INI! Anda dapat mengubahnya di tab 'Atur'.`);
              }
              
