@@ -58,7 +58,7 @@
             align-items: center;
             
             background-color: var(--card-background);
-            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1); /* Clearer shadow */
+            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1); 
             height: var(--tab-height); 
             
             width: 100%;
@@ -80,7 +80,7 @@
             font-weight: 500;
             color: #777;
             border-radius: 8px;
-            transition: all 0.2s ease-out; /* Added transition for smoother tap/hover */
+            transition: all 0.2s ease-out; 
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -92,7 +92,6 @@
         .tab-btn.active {
             color: var(--primary-color);
             font-weight: 600;
-            /* Added subtle transform for active tab flair */
             transform: scale(1.05); 
         }
 
@@ -109,7 +108,6 @@
         /* --- View Management --- */
         .view-content {
             display: none; 
-            /* Added subtle animation for view switching */
             opacity: 0; 
             transition: opacity 0.3s ease-in-out;
         }
@@ -127,7 +125,7 @@
             box-shadow: var(--shadow-deep);
             margin-bottom: 30px;
             border-left: 5px solid var(--primary-color);
-            transition: box-shadow 0.3s ease; /* Transition for visual feedback */
+            transition: box-shadow 0.3s ease; 
         }
 
         #budget-form:hover {
@@ -165,7 +163,7 @@
         input:focus, select:focus {
             border-color: var(--primary-color);
             outline: none;
-            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); /* Added glow effect on focus */
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); 
         }
 
         /* Radio Buttons */
@@ -185,7 +183,7 @@
             padding: 8px 15px;
             border-radius: 20px;
             cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s, box-shadow 0.2s; /* Added box-shadow transition */
+            transition: background-color 0.3s, transform 0.1s, box-shadow 0.2s; 
             font-weight: 400;
             user-select: none;
         }
@@ -195,7 +193,7 @@
             color: white;
             font-weight: 600;
             transform: scale(1.05);
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); /* Added small lift shadow */
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); 
         }
 
         button.submit-btn {
@@ -208,18 +206,18 @@
             font-size: 18px;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s; /* Smoother button press */
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s; 
             box-shadow: 0 4px 8px rgba(255, 152, 0, 0.4);
         }
 
         button.submit-btn:hover {
             background-color: #e68900;
-            transform: translateY(-3px); /* Noticeable lift */
+            transform: translateY(-3px); 
             box-shadow: 0 6px 12px rgba(255, 152, 0, 0.6);
         }
         
         button.submit-btn:active {
-             transform: translateY(-1px); /* Push down slightly on click */
+             transform: translateY(-1px); 
         }
 
         /* --- DAILY SUMMARY STYLING --- */
@@ -252,11 +250,11 @@
             justify-content: space-between;
             align-items: center;
             border-left: 5px solid;
-            transition: transform 0.2s ease-out, box-shadow 0.2s, opacity 0.3s; /* Added opacity for smooth delete */
+            transition: transform 0.2s ease-out, box-shadow 0.2s, opacity 0.3s; 
         }
 
         .note-item:hover {
-            transform: translateY(-2px); /* Lifts the card */
+            transform: translateY(-2px); 
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
         }
 
@@ -272,17 +270,17 @@
             background: none;
             border: none;
             color: #aaa;
-            font-size: 1.4em; /* Slightly larger icon */
+            font-size: 1.4em; 
             cursor: pointer;
             transition: color 0.2s, transform 0.1s;
         }
 
         .delete-btn:hover {
             color: var(--expense-color);
-            transform: scale(1.1); /* Pop effect on hover */
+            transform: scale(1.1); 
         }
 
-        /* --- MONTHLY SUMMARY STYLING --- */
+        /* --- MONTHLY SUMMARY & SETTINGS STYLING --- */
         #monthly-list {
             list-style: none;
             padding: 0;
@@ -303,7 +301,7 @@
         }
 
 
-        /* Remaining styles (unchanged but included for completeness) */
+        /* Remaining styles */
         .summary-card p {
             margin: 0;
             font-size: 0.9em;
@@ -408,6 +406,12 @@
         .month-details .expense { color: var(--expense-color); }
         .month-details .positive { color: var(--primary-color); }
         .month-details .negative { color: var(--expense-color); }
+        
+        /* Custom styling for settings view */
+        #export-import-card {
+            border-left: 5px solid #2196F3; /* Warna biru untuk manajemen data */
+        }
+        
     </style>
 </head>
 <body>
@@ -481,12 +485,33 @@
             </div>
 
             <button type="button" class="submit-btn" style="background-color: var(--primary-color); margin-bottom: 20px;" onclick="exportMonthlySummary()">
-                Ekspor ke CSV 💾
+                Ekspor Ringkasan Bulanan (CSV) 💾
             </button>
             <h2>Ringkasan Transaksi 🗓️</h2>
             <p id="monthly-empty-message" style="text-align: center; color: #999; padding: 20px; background: var(--card-background); border-radius: 10px; display: none;">Belum ada data untuk ringkasan bulanan.</p>
             <ul id="monthly-list">
                 </ul>
+        </div>
+        
+        <div id="settings-view" class="view-content">
+            <h2>Pengaturan Data ⚙️</h2>
+            <p style="color: #777; margin-top: -10px; margin-bottom: 25px;">Kelola dan migrasi data transaksi Anda.</p>
+            
+            <div id="export-import-card" class="monthly-card">
+                <span class="month-header">Impor & Ekspor Data Mentah (JSON)</span>
+                <p style="font-size: 0.9em; color: #555; margin-bottom: 15px;">Ekspor adalah backup data lengkap Anda (JSON). Impor akan **menimpa** data yang ada.</p>
+
+                <button type="button" class="submit-btn" style="background-color: #555; margin-bottom: 10px;" onclick="exportRawData()">
+                    Ekspor Data Mentah (JSON) 📥
+                </button>
+                
+                <label for="import-file" style="margin-top: 20px; font-weight: 600;">Pilih File Data JSON (.json):</label>
+                <input type="file" id="import-file" accept=".json" style="padding: 10px 0; display: block; width: 100%;" onchange="importRawData(event)">
+            </div>
+
+            <button type="button" class="submit-btn" style="background-color: var(--expense-color); margin-top: 30px;" onclick="clearAllData()">
+                HAPUS SEMUA DATA TRANSAKSI 🗑️
+            </button>
         </div>
     </div>
     
@@ -498,6 +523,10 @@
         <button class="tab-btn" data-tab="monthly-summary-view">
             <span>📊</span>
             Ringkasan
+        </button>
+        <button class="tab-btn" data-tab="settings-view">
+            <span>⚙️</span>
+            Atur
         </button>
     </div>
     <script>
@@ -639,7 +668,7 @@
             const typeLabel = note.type === 'masuk' ? 'Pemasukan' : 'Pengeluaran';
             const sign = note.type === 'masuk' ? '+' : '-';
 
-            const transactionDate = note.date ? new Date(note.date) : new Date(note.id); 
+            const transactionDate = note.date ? new Date(note.date) : new Date(parseInt(note.id)); 
 
             listItem.innerHTML = `
                 <div class="note-details">
@@ -658,7 +687,7 @@
             const monthlyData = {};
 
             notes.forEach(note => {
-                const date = new Date(note.date || note.id); 
+                const date = new Date(note.date || parseInt(note.id)); 
                 
                 const year = date.getFullYear();
                 const month = (date.getMonth() + 1).toString().padStart(2, '0'); 
@@ -730,7 +759,7 @@
                 notesToDisplay = allNotes.filter(note => note.type === typeFilter);
             }
 
-            notesToDisplay.sort((a, b) => new Date(b.date || b.id) - new Date(a.date || a.id)); 
+            notesToDisplay.sort((a, b) => new Date(b.date || parseInt(b.id)) - new Date(a.date || parseInt(a.id))); 
             
             notesList.innerHTML = ''; 
             if (notesToDisplay.length === 0) {
@@ -835,7 +864,7 @@
         });
 
         /* ----------------------
-        |  EXPORT FEATURE LOGIC (FITUR BARU)
+        |  EXPORT CSV LOGIC (Ringkasan Bulanan)
         | ---------------------- */
 
         window.exportMonthlySummary = function() {
@@ -847,53 +876,122 @@
                 return;
             }
 
-            // Hitung ringkasan bulanan
             const monthlyData = calculateMonthlySummary(allNotes);
             const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             
             const monthKeys = Object.keys(monthlyData).sort().reverse(); 
             
-            // 1. Buat Header CSV
             let csvContent = "Bulan,Pemasukan (Rp),Pengeluaran (Rp),Saldo Bulan Ini (Rp)\n";
 
-            // 2. Isi Baris Data
             monthKeys.forEach(key => {
                 const [year, monthIndex] = key.split('-');
                 const monthName = monthNames[parseInt(monthIndex, 10) - 1];
                 const data = monthlyData[key];
                 const balance = data.income - data.expense;
 
-                // Pastikan angka tidak memiliki separator ribuan untuk CSV
                 const incomeRaw = data.income;
                 const expenseRaw = data.expense;
                 const balanceRaw = balance;
                 
-                // Pisahkan dengan koma (,)
                 const line = `${monthName} ${year},${incomeRaw},${expenseRaw},${balanceRaw}\n`;
                 csvContent += line;
             });
 
-            // 3. Buat Blob dan Link Unduhan
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             
-            // Tentukan nama file
             const dateStamp = new Date().toISOString().substring(0, 10);
             link.setAttribute("href", URL.createObjectURL(blob));
             link.setAttribute("download", `RingkasanAnggaran_${dateStamp}.csv`);
             
-            // Tambahkan dan klik link secara otomatis untuk memicu unduhan
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             
             alert("Data ringkasan berhasil diekspor ke CSV!");
         }
+        
+        /* ----------------------
+        |  EXPORT/IMPORT RAW DATA & CLEAR (TAB ATUR)
+        | ---------------------- */
+
+        /**
+         * Ekspor data mentah (JSON) dari localStorage.
+         */
+        window.exportRawData = function() {
+            const notesJSON = localStorage.getItem('budgetNotes');
+
+            if (!notesJSON || JSON.parse(notesJSON).length === 0) {
+                alert("Tidak ada data transaksi untuk diekspor.");
+                return;
+            }
+
+            const blob = new Blob([notesJSON], { type: 'application/json' });
+            const link = document.createElement("a");
+            const dateStamp = new Date().toISOString().substring(0, 10);
+            
+            link.setAttribute("href", URL.createObjectURL(blob));
+            link.setAttribute("download", `DataAnggaranMentah_${dateStamp}.json`);
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert("Data mentah (JSON) berhasil diekspor! Gunakan file ini untuk Impor data di perangkat lain.");
+        }
+
+        /**
+         * Impor data mentah dari file JSON, menimpa data yang ada.
+         */
+        window.importRawData = function(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            if (!confirm('PERINGATAN! Impor data akan MENIMPA SEMUA data transaksi yang ada saat ini. Lanjutkan?')) {
+                event.target.value = ''; 
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedNotes = JSON.parse(e.target.result);
+                    
+                    if (!Array.isArray(importedNotes) || (importedNotes.length > 0 && !importedNotes[0].id)) {
+                        throw new Error("Struktur file JSON tidak valid.");
+                    }
+                    
+                    localStorage.setItem('budgetNotes', JSON.stringify(importedNotes));
+                    alert(`Data (${importedNotes.length} catatan) berhasil diimpor dan menimpa data lama!`);
+                    loadNotes();
+                    changeTab('daily-view'); 
+                } catch (error) {
+                    alert('Gagal mengimpor file. Pastikan file berformat JSON yang benar. Error: ' + error.message);
+                } finally {
+                    event.target.value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        /**
+         * Menghapus semua data transaksi dari localStorage.
+         */
+        window.clearAllData = function() {
+            if (confirm('SANGAT PENTING: Anda yakin ingin MENGHAPUS SEMUA DATA TRANSAKSI Anda? Tindakan ini tidak dapat dibatalkan. Pastikan Anda sudah melakukan Ekspor (Backup)!')) {
+                localStorage.removeItem('budgetNotes');
+                alert('Semua data transaksi telah dihapus!');
+                loadNotes();
+                changeTab('daily-view');
+            }
+        }
+
 
         // --- Initial Load ---
         document.addEventListener('DOMContentLoaded', () => {
              loadNotes();
-             // Manually set initial view to apply active styles and opacity transition
              const initialView = document.getElementById('daily-view');
              if (initialView) {
                  initialView.classList.add('active');
