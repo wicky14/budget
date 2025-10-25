@@ -145,6 +145,7 @@
 
         input[type="text"], 
         input[type="date"],
+        input[type="password"],
         select {
             width: 100%;
             padding: 10px;
@@ -356,6 +357,12 @@
             font-size: 1.1em;
             margin-bottom: 5px;
         }
+        
+        .note-group {
+            font-size: 0.85em; 
+            color: #888; 
+            margin-bottom: 3px;
+        }
 
         .note-amount {
             font-size: 1.3em;
@@ -439,6 +446,26 @@
 </head>
 <body>
 
+    <div id="auth-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #f4f7f6; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+        <h2 style="color: var(--primary-color);">Akses Aplikasi Terkunci 🔒</h2>
+        <p id="auth-instruction" style="color: #666; margin-bottom: 30px;">Gunakan biometrik untuk membuka.</p>
+        
+        <button id="biometric-auth-btn" style="padding: 15px 30px; background-color: var(--income-color); color: white; border: none; border-radius: 10px; font-size: 1.1em; cursor: pointer; box-shadow: 0 4px 8px rgba(33, 150, 243, 0.5);">
+            Ketuk untuk Autentikasi Biometrik 👆
+        </button>
+        
+        <div id="pin-input-container" style="display: none; margin-top: 20px; width: 80%; max-width: 350px;">
+            <input type="password" id="pin-input" placeholder="Masukkan PIN 6 digit" maxlength="6" inputmode="numeric" style="padding: 10px; flex-grow: 1; text-align: center; font-size: 18px; border-radius: 8px 0 0 8px; border: 1px solid #ddd; border-right: none;">
+            <button id="pin-submit-btn" style="padding: 10px 20px; background-color: var(--secondary-color); color: white; border: none; border-radius: 0 8px 8px 0; margin-left: -1px; cursor: pointer;">
+                Buka
+            </button>
+        </div>
+
+        <p id="auth-status" style="margin-top: 20px; color: var(--expense-color); font-weight: 600;">Status: Menunggu...</p>
+        <p style="font-size: 0.8em; color: #aaa; max-width: 80%; margin-top: 20px;">
+            *Opsi PIN akan muncul jika Biometrik gagal.
+        </p>
+    </div>
     <div class="container">
         <h1>Catatan Anggaran 📝</h1>
 
@@ -470,7 +497,14 @@
                     <label for="note">Catatan Singkat:</label>
                     <input type="text" id="note" placeholder="Contoh: Gaji bulan ini / Beli kopi" required>
                 </div>
-                
+
+                <div class="form-group">
+                    <label for="group">Grup Transaksi:</label>
+                    <select id="group" required>
+                        <option value="bulanan">Uang Bulanan 🗓️</option>
+                        <option value="tabungan">Tabungan 🏦</option>
+                    </select>
+                </div>
                 <div class="form-group" style="border: 1px dashed #ddd; padding: 10px; border-radius: 8px; margin-top: 20px;">
                     <label style="font-weight: 400; color: #555;">Bukti Transaksi (Opsional):</label>
                     
@@ -534,6 +568,18 @@
             <h2>Pengaturan Data ⚙️</h2>
             <p style="color: #777; margin-top: -10px; margin-bottom: 25px;">Kelola dan migrasi data transaksi Anda.</p>
             
+            <div id="pin-change-card" class="monthly-card" style="border-left: 5px solid #ff5722;">
+                <span class="month-header">Ubah PIN Akses</span>
+                <form id="pin-change-form">
+                    <div class="form-group">
+                        <label for="new-pin">PIN Baru (6 Digit Angka):</label>
+                        <input type="password" id="new-pin" placeholder="PIN Baru" maxlength="6" inputmode="numeric" required style="width: 100%;">
+                    </div>
+                    <button type="submit" class="submit-btn" style="background-color: #ff5722; font-size: 16px; padding: 10px;">
+                        Simpan PIN Baru
+                    </button>
+                </form>
+            </div>
             <div id="export-import-card" class="monthly-card">
                 <span class="month-header">Impor & Ekspor Data Mentah (JSON)</span>
                 <p style="font-size: 0.9em; color: #555; margin-bottom: 15px;">Ekspor adalah backup data lengkap Anda (JSON). Impor akan **menimpa** data yang ada.</p>
@@ -580,6 +626,9 @@
         const dateInput = document.getElementById('date');
         const amountInput = document.getElementById('amount'); 
         const typeFilterSelect = document.getElementById('type-filter');
+        
+        // Group element
+        const groupInput = document.getElementById('group'); 
 
         const totalIncomeEl = document.querySelector('#daily-total-income .summary-amount');
         const totalExpenseEl = document.querySelector('#daily-total-expense .summary-amount');
@@ -594,119 +643,23 @@
         const imagePreviewContainer = document.getElementById('image-preview-container');
         const imagePreview = document.getElementById('image-preview');
         const captureImageBtn = document.getElementById('capture-image-btn');
-        let currentImageBase64 = null; // Menyimpan Base64 gambar saat ini
+        let currentImageBase64 = null; 
         
+        // Auth elements (UPDATED)
+        const authOverlay = document.getElementById('auth-overlay');
+        const biometricAuthBtn = document.getElementById('biometric-auth-btn');
+        const authStatus = document.getElementById('auth-status');
+        const authInstruction = document.getElementById('auth-instruction');
+        const pinInputContainer = document.getElementById('pin-input-container');
+        const pinInput = document.getElementById('pin-input');
+        const pinSubmitBtn = document.getElementById('pin-submit-btn');
+        const appContainer = document.querySelector('.container');
+        const tabs = document.getElementById('tabs');
+        const pinChangeForm = document.getElementById('pin-change-form'); // NEW
+
         // Set default date to today's date on load
         dateInput.valueAsDate = new Date();
         typeFilterSelect.addEventListener('change', loadNotes);
-
-        /* ----------------------
-        |  IMAGE HANDLING LOGIC 
-        | ---------------------- */
-
-        /**
-         * Mengkompresi file gambar yang dipilih menggunakan Canvas API.
-         * @param {File} file - File gambar yang akan dikompres.
-         * @param {number} quality - Kualitas kompresi JPEG (0.0 hingga 1.0).
-         * @returns {Promise<string>} String Base64 dari gambar yang dikompresi.
-         */
-        function compressImage(file, quality = 0.7) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800; // Batasi lebar maksimum
-                        const MAX_HEIGHT = 800; // Batasi tinggi maksimum
-                        
-                        let width = img.width;
-                        let height = img.height;
-
-                        // Sesuaikan dimensi agar gambar tidak terlalu besar
-                        if (width > height) {
-                            if (width > MAX_WIDTH) {
-                                height *= MAX_WIDTH / width;
-                                width = MAX_WIDTH;
-                            }
-                        } else {
-                            if (height > MAX_HEIGHT) {
-                                width *= MAX_HEIGHT / height;
-                                height = MAX_HEIGHT;
-                            }
-                        }
-                        
-                        canvas.width = width;
-                        canvas.height = height;
-                        
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        // Konversi kembali ke Base64 dengan kompresi JPEG
-                        const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
-                        resolve(compressedBase64);
-                    };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        imageInput.addEventListener('change', async (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                
-                // Batas keras file mentah 5MB
-                if (file.size > 1024 * 5000) { 
-                     alert('File gambar terlalu besar. Batas maksimal file mentah adalah 5MB.');
-                     imageInput.value = '';
-                     removeImage();
-                     return;
-                }
-
-                try {
-                    captureImageBtn.textContent = 'Memproses...';
-                    captureImageBtn.disabled = true;
-
-                    // Panggil fungsi kompresi
-                    const compressedBase64 = await compressImage(file, 0.7); 
-
-                    currentImageBase64 = compressedBase64;
-                    imagePreview.src = currentImageBase64;
-                    imagePreviewContainer.style.display = 'block';
-                    captureImageBtn.textContent = 'Ganti Foto 🔄';
-                    captureImageBtn.style.backgroundColor = '#0056b3';
-                    
-                } catch(error) {
-                    alert('Gagal memproses gambar. Silakan coba gambar lain.');
-                    console.error(error);
-                    removeImage();
-                } finally {
-                    captureImageBtn.disabled = false;
-                }
-                
-            } else {
-                removeImage();
-            }
-        });
-
-        window.removeImage = function() {
-            currentImageBase64 = null;
-            imageInput.value = ''; 
-            imagePreview.src = '';
-            imagePreviewContainer.style.display = 'none';
-            captureImageBtn.textContent = 'Tambah Foto 📸';
-            captureImageBtn.style.backgroundColor = '#007bff';
-        }
-
-        window.showFullImage = function(base64Data) {
-            const modal = document.getElementById('image-modal');
-            const modalImage = document.getElementById('modal-image');
-            
-            modalImage.src = base64Data;
-            modal.style.display = 'block';
-        }
-
 
         /* ----------------------
         |  HELPER FUNCTIONS
@@ -788,6 +741,103 @@
             }
         });
 
+        /* ----------------------
+        |  IMAGE HANDLING LOGIC 
+        | ---------------------- */
+
+        function compressImage(file, quality = 0.7) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800;
+                        const MAX_HEIGHT = 800;
+                        
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                        resolve(compressedBase64);
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        imageInput.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                
+                if (file.size > 1024 * 5000) { 
+                     alert('File gambar terlalu besar. Batas maksimal file mentah adalah 5MB.');
+                     imageInput.value = '';
+                     removeImage();
+                     return;
+                }
+
+                try {
+                    captureImageBtn.textContent = 'Memproses...';
+                    captureImageBtn.disabled = true;
+
+                    const compressedBase64 = await compressImage(file, 0.7); 
+
+                    currentImageBase64 = compressedBase64;
+                    imagePreview.src = currentImageBase64;
+                    imagePreviewContainer.style.display = 'block';
+                    captureImageBtn.textContent = 'Ganti Foto 🔄';
+                    captureImageBtn.style.backgroundColor = '#0056b3';
+                    
+                } catch(error) {
+                    alert('Gagal memproses gambar. Silakan coba gambar lain.');
+                    console.error(error);
+                    removeImage();
+                } finally {
+                    captureImageBtn.disabled = false;
+                }
+                
+            } else {
+                removeImage();
+            }
+        });
+
+        window.removeImage = function() {
+            currentImageBase64 = null;
+            imageInput.value = ''; 
+            imagePreview.src = '';
+            imagePreviewContainer.style.display = 'none';
+            captureImageBtn.textContent = 'Tambah Foto 📸';
+            captureImageBtn.style.backgroundColor = '#007bff';
+        }
+
+        window.showFullImage = function(base64Data) {
+            const modal = document.getElementById('image-modal');
+            const modalImage = document.getElementById('modal-image');
+            
+            modalImage.src = base64Data;
+            modal.style.display = 'block';
+        }
+
 
         /* ----------------------
         |  VIEW AND DATA LOGIC 
@@ -807,6 +857,7 @@
 
             const currentBalance = totalIncome - totalExpense;
 
+            // UPDATE TAMPILAN SALDO GLOBAL
             totalIncomeEl.textContent = `Rp ${formatRupiah(totalIncome)}`;
             totalExpenseEl.textContent = `Rp ${formatRupiah(totalExpense)}`;
             
@@ -825,14 +876,17 @@
             const sign = note.type === 'masuk' ? '+' : '-';
 
             const transactionDate = note.date ? new Date(note.date) : new Date(parseInt(note.id)); 
+            
+            const group = note.group || 'bulanan'; 
+            const groupLabel = group === 'tabungan' ? 'Tabungan 🏦' : 'Bulanan 🗓️'; 
 
-            // Tampilkan gambar jika ada
             const imageHtml = note.image ? 
                 `<img src="${note.image}" alt="Bukti Transaksi" class="note-image-icon" onclick="showFullImage('${note.image}')">` : '';
 
             listItem.innerHTML = `
                 <div class="note-details">
                     <div class="note-type">${typeLabel} (${transactionDate.toLocaleDateString('id-ID')})</div>
+                    <div class="note-group">Grup: ${groupLabel}</div> 
                     <div class="note-amount ${note.type}">${sign} Rp ${formatRupiah(note.amount)}</div>
                     <div class="note-description">${note.note}</div>
                 </div>
@@ -857,13 +911,19 @@
                 const monthKey = `${year}-${month}`;
 
                 if (!monthlyData[monthKey]) {
-                    monthlyData[monthKey] = { income: 0, expense: 0 };
+                    monthlyData[monthKey] = { income: 0, expense: 0, bulananIncome: 0, bulananExpense: 0, tabunganIncome: 0, tabunganExpense: 0 };
                 }
+                
+                const group = note.group || 'bulanan'; 
 
                 if (note.type === 'masuk') {
                     monthlyData[monthKey].income += note.amount;
+                    if (group === 'bulanan') monthlyData[monthKey].bulananIncome += note.amount;
+                    if (group === 'tabungan') monthlyData[monthKey].tabunganIncome += note.amount;
                 } else {
                     monthlyData[monthKey].expense += note.amount;
+                    if (group === 'bulanan') monthlyData[monthKey].bulananExpense += note.amount;
+                    if (group === 'tabungan') monthlyData[monthKey].tabunganExpense += note.amount;
                 }
             });
 
@@ -888,21 +948,43 @@
                 const data = monthlyData[key];
                 const balance = data.income - data.expense;
 
+                const bulananBalance = data.bulananIncome - data.bulananExpense;
+                const tabunganBalance = data.tabunganIncome - data.tabunganExpense;
+
+
                 const listItem = document.createElement('li');
                 listItem.className = 'monthly-card';
                 listItem.innerHTML = `
                     <span class="month-header">${monthName} ${year}</span>
                     <div class="month-details">
-                        <div>
-                            <span>Pemasukan:</span>
-                            <span class="income">+ Rp ${formatRupiah(data.income)}</span>
+                        <div style="font-weight: 700;">
+                            <span>Total Bulanan:</span>
+                            <span class="${bulananBalance >= 0 ? 'positive' : 'negative'}">${bulananBalance >= 0 ? '+' : ''} Rp ${formatRupiah(bulananBalance)}</span>
                         </div>
-                        <div>
-                            <span>Pengeluaran:</span>
-                            <span class="expense">- Rp ${formatRupiah(data.expense)}</span>
+                        <div style="padding-left: 10px;">
+                            <span>Pemasukan Bulanan:</span>
+                            <span class="income">+ Rp ${formatRupiah(data.bulananIncome)}</span>
                         </div>
-                        <div class="balance">
-                            <span>**Saldo Bulan Ini:**</span>
+                        <div style="padding-left: 10px; border-bottom: 1px dashed #ddd; padding-bottom: 10px; margin-bottom: 5px;">
+                            <span>Pengeluaran Bulanan:</span>
+                            <span class="expense">- Rp ${formatRupiah(data.bulananExpense)}</span>
+                        </div>
+                        
+                        <div style="font-weight: 700;">
+                            <span>Total Tabungan:</span>
+                            <span class="${tabunganBalance >= 0 ? 'positive' : 'negative'}">${tabunganBalance >= 0 ? '+' : ''} Rp ${formatRupiah(tabunganBalance)}</span>
+                        </div>
+                        <div style="padding-left: 10px;">
+                            <span>Masuk Tabungan:</span>
+                            <span class="income">+ Rp ${formatRupiah(data.tabunganIncome)}</span>
+                        </div>
+                        <div style="padding-left: 10px;">
+                            <span>Keluar Tabungan:</span>
+                            <span class="expense">- Rp ${formatRupiah(data.tabunganExpense)}</span>
+                        </div>
+
+                        <div class="balance" style="margin-top: 15px;">
+                            <span>**Saldo Total Bulan Ini:**</span>
                             <span class="${balance >= 0 ? 'positive' : 'negative'}">${balance >= 0 ? '+' : ''} Rp ${formatRupiah(balance)}</span>
                         </div>
                     </div>
@@ -915,17 +997,13 @@
             const notesJSON = localStorage.getItem('budgetNotes');
             const allNotes = notesJSON ? JSON.parse(notesJSON) : [];
             
-            // Filter Tipe
             const typeFilter = typeFilterSelect.value;
             let notesToDisplay = allNotes;
             if (typeFilter !== 'all') {
                 notesToDisplay = allNotes.filter(note => note.type === typeFilter);
             }
 
-            // --- START: PERUBAHAN PENTING UNTUK URUTAN INPUT TERBARU ---
-            // Urutkan berdasarkan ID (timestamp) secara descending (Terbaru dulu).
             notesToDisplay.sort((a, b) => parseInt(b.id) - parseInt(a.id));
-            // --- END: PERUBAHAN PENTING ---
             
             notesList.innerHTML = ''; 
             if (notesToDisplay.length === 0) {
@@ -984,6 +1062,7 @@
             const amount = cleanAmount(amountInput.value); 
             const noteText = document.getElementById('note').value.trim();
             const transactionDate = dateInput.value;
+            const group = document.getElementById('group').value; 
 
             if (amount <= 0 || noteText === '' || transactionDate === '') {
                 alert('Mohon isi semua kolom dengan benar (Jumlah harus lebih dari 0 dan tanggal harus dipilih).');
@@ -1014,19 +1093,21 @@
                 amount: amount,
                 note: noteText,
                 date: new Date(transactionDate).toISOString(),
-                image: currentImageBase64 
+                image: currentImageBase64,
+                group: group 
             };
 
             saveNote(newNote);
 
-            // Clear the form and reset date/radio
+            // Clear the form and reset date/radio/group
             form.reset();
             document.getElementById('masuk').checked = true;
+            document.getElementById('group').value = 'bulanan'; 
             dateInput.valueAsDate = new Date();
             amountInput.value = ''; 
             typeFilterSelect.value = 'all';
 
-            removeImage(); // Hapus gambar dari pratinjau setelah submit
+            removeImage(); 
 
             loadNotes();
             changeTab('daily-view'); 
@@ -1050,7 +1131,7 @@
             
             const monthKeys = Object.keys(monthlyData).sort().reverse(); 
             
-            let csvContent = "Bulan,Pemasukan (Rp),Pengeluaran (Rp),Saldo Bulan Ini (Rp)\n";
+            let csvContent = "Bulan,Pemasukan Total (Rp),Pengeluaran Total (Rp),Saldo Bulan Ini (Rp),Pemasukan Bulanan (Rp),Pengeluaran Bulanan (Rp),Pemasukan Tabungan (Rp),Pengeluaran Tabungan (Rp)\n";
 
             monthKeys.forEach(key => {
                 const [year, monthIndex] = key.split('-');
@@ -1058,11 +1139,7 @@
                 const data = monthlyData[key];
                 const balance = data.income - data.expense;
 
-                const incomeRaw = data.income;
-                const expenseRaw = data.expense;
-                const balanceRaw = balance;
-                
-                const line = `${monthName} ${year},${incomeRaw},${expenseRaw},${balanceRaw}\n`;
+                const line = `${monthName} ${year},${data.income},${data.expense},${balance},${data.bulananIncome},${data.bulananExpense},${data.tabunganIncome},${data.tabunganExpense}\n`;
                 csvContent += line;
             });
 
@@ -1156,15 +1233,144 @@
                 changeTab('daily-view');
             }
         }
+        
+        /* ----------------------
+        |  PIN MANAGEMENT & AUTHENTICATION LOGIC (NEW/UPDATED)
+        | ---------------------- */
+
+        function generatePin() {
+            let pin = '';
+            for (let i = 0; i < 6; i++) {
+                pin += Math.floor(Math.random() * 10);
+            }
+            return pin;
+        }
+
+        function getPin() {
+            return localStorage.getItem('appPin');
+        }
+
+        function setPin(newPin) {
+            localStorage.setItem('appPin', newPin);
+        }
+        
+        function switchToPinMode(message) {
+            authInstruction.textContent = message || "Biometrik gagal/dibatalkan. Masukkan PIN Anda.";
+            biometricAuthBtn.style.display = 'none';
+            pinInputContainer.style.display = 'flex';
+            pinInput.focus();
+            authStatus.textContent = "Mode PIN Cadangan Aktif"; 
+            authStatus.style.color = '#FF9800';
+        }
+
+        function validatePin() {
+            const enteredPin = pinInput.value.trim();
+            const storedPin = getPin();
+
+            if (enteredPin.length === 6 && enteredPin === storedPin) {
+                authStatus.textContent = "PIN Benar! Membuka kunci...";
+                authStatus.style.color = 'var(--primary-color)';
+                setTimeout(unlockApp, 500);
+            } else {
+                authStatus.textContent = "PIN salah. Coba lagi.";
+                authStatus.style.color = 'var(--expense-color)';
+                pinInput.value = '';
+                pinInput.focus();
+            }
+        }
+        
+        pinSubmitBtn.addEventListener('click', validatePin);
+        pinInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                validatePin();
+            }
+        });
+        pinInput.addEventListener('input', function(e) {
+            // Hapus karakter non-digit dan batasi 6 digit
+            e.target.value = e.target.value.replace(/\D/g, '').substring(0, 6);
+        });
+
+        pinChangeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newPinInput = document.getElementById('new-pin');
+            const newPin = newPinInput.value;
+            
+            if (newPin.length !== 6 || !/^\d{6}$/.test(newPin)) {
+                alert('PIN harus berupa 6 digit angka.');
+                return;
+            }
+            
+            setPin(newPin);
+            alert('PIN Akses berhasil diubah!');
+            pinChangeForm.reset();
+        });
 
 
-        // --- Initial Load ---
+        function unlockApp() {
+            authOverlay.style.display = 'none';
+            appContainer.style.display = 'block';
+            tabs.style.display = 'flex';
+            loadNotes();
+        }
+
+        async function authenticateBiometric() {
+            // Cek jika API tidak didukung, langsung pindah ke PIN
+            if (!window.PublicKeyCredential) {
+                switchToPinMode("Browser Anda tidak mendukung Autentikasi Biometrik.");
+                return; 
+            }
+
+            authStatus.textContent = "Mencoba otentikasi biometrik...";
+            authStatus.style.color = 'var(--secondary-color)';
+            biometricAuthBtn.disabled = true;
+
+            try {
+                // Buat challenge acak (Hanya untuk kunci lokal)
+                const challenge = new Uint8Array(32);
+                window.crypto.getRandomValues(challenge); 
+
+                const credentialRequestOptions = {
+                    challenge: challenge,
+                    allowCredentials: [], 
+                    timeout: 60000,
+                    userVerification: 'required', 
+                    rpId: window.location.hostname || 'localhost',
+                };
+
+                await navigator.credentials.get({
+                    publicKey: credentialRequestOptions
+                });
+
+                // Jika berhasil
+                authStatus.textContent = "Autentikasi Berhasil! Membuka kunci...";
+                authStatus.style.color = 'var(--primary-color)';
+                setTimeout(unlockApp, 500);
+
+            } catch (error) {
+                console.error("Autentikasi Biometrik Gagal:", error);
+                // Jika gagal/dibatalkan, pindah ke mode PIN
+                biometricAuthBtn.disabled = false;
+                switchToPinMode();
+            }
+        }
+
+
+        // --- Initial Load (Setup PIN & Start Auth) ---
         document.addEventListener('DOMContentLoaded', () => {
-             loadNotes();
-             const initialView = document.getElementById('daily-view');
-             if (initialView) {
-                 initialView.classList.add('active');
+             // 1. Setup PIN jika belum ada
+             if (!getPin()) {
+                const defaultPin = generatePin();
+                setPin(defaultPin);
+                
+                // Tampilkan PIN ke user
+                alert(`SELAMAT DATANG! Ini adalah PIN akses default Anda: ${defaultPin}\n\nCATAT PIN INI! Anda dapat mengubahnya di tab 'Atur'.`);
              }
+             
+             // 2. Sembunyikan konten utama dan mulai autentikasi
+             appContainer.style.display = 'none';
+             tabs.style.display = 'none';
+
+             setTimeout(authenticateBiometric, 500); 
         });
     </script>
 
