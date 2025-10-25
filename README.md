@@ -1,43 +1,33 @@
-📝 Catatan Anggaran Sederhana (Simple Budget Tracker)
-Aplikasi pencatat transaksi harian berbasis web (HTML, CSS, dan Vanilla JavaScript) yang berjalan sepenuhnya di sisi klien (client-side) dan memanfaatkan Local Storage untuk menyimpan data. Cocok digunakan sebagai alat budgeting pribadi yang ringan dan offline-first.
+# Catatan Anggaran Sederhana 💰
 
-✨ Fitur Utama
-Aplikasi ini dirancang untuk kemudahan dan kecepatan pencatatan:
+**Catatan Anggaran Sederhana** adalah aplikasi web sederhana untuk mencatat dan mengelola keuangan pribadi secara offline. Dibuat dengan HTML, CSS, dan JavaScript, aplikasi ini menggunakan `localStorage` untuk menyimpan data transaksi, mendukung input pemasukan/pengeluaran, ringkasan harian & bulanan, serta ekspor/impor data. Antarmuka mobile-friendly dirancang dalam bahasa Indonesia dengan desain yang bersih dan intuitif.
 
-Pencatatan Transaksi: Mencatat pemasukan (Masuk) dan pengeluaran (Keluar) dengan detail tanggal, jumlah (Rupiah), dan catatan singkat.
+## 📋 Fitur Utama
 
-Dukungan Gambar Bukti: Dapat melampirkan foto/struk transaksi (gambar dikompres dan disimpan sebagai Base64 di Local Storage).
+- **Catatan Harian**:
+  - Tambah transaksi (pemasukan/pengeluaran) dengan tanggal, jumlah, catatan, dan bukti foto (opsional).
+  - Kompresi gambar otomatis (max 800x800px, JPEG quality 0.7).
+  - Filter catatan berdasarkan tipe (masuk/keluar).
+  - Ringkasan harian (total pemasukan, pengeluaran, dan saldo kumulatif).
+  - Hapus catatan individu dengan animasi transisi.
 
-Ringkasan Harian: Melihat total pemasukan dan pengeluaran serta saldo kumulatif.
+- **Ringkasan Bulanan**:
+  - Lihat ringkasan pemasukan, pengeluaran, dan saldo per bulan.
+  - Ekspor ringkasan bulanan ke CSV.
 
-Ringkasan Bulanan: Menyediakan summary agregat per bulan (total Masuk, total Keluar, dan saldo bulanan).
+- **Pengaturan Data**:
+  - Ekspor semua data (termasuk gambar) ke JSON.
+  - Impor data JSON (menimpa data lama).
+  - Hapus semua data dengan konfirmasi.
 
-Filter Tampilan: Memfilter daftar catatan harian berdasarkan tipe (Masuk/Keluar/Semua).
+- **Desain & UX**:
+  - Antarmuka responsif dengan tab navigasi bawah (mobile-friendly).
+  - Format Rupiah otomatis untuk input jumlah.
+  - Peringatan saldo negatif (< -Rp 50.000) saat input pengeluaran.
+  - Modal untuk melihat gambar bukti transaksi dalam ukuran penuh.
 
-Manajemen Data:
-
-Ekspor/Impor Mentah (JSON): Untuk backup dan migrasi data lengkap.
-
-Ekspor Ringkasan (CSV): Untuk analisis bulanan di spreadsheet.
-
-🚀 Teknologi
-Proyek ini dibuat dengan tujuan minimalis dan tanpa framework eksternal, menjadikannya sangat cepat dimuat dan dijalankan.
-
-Struktur: HTML5 Semantik
-
-Styling: CSS3 Murni (Menggunakan font Poppins dari Google Fonts)
-
-Logika: Vanilla JavaScript (ES6+), sepenuhnya Client-Side.
-
-Penyimpanan Data: Web Storage API (localStorage).
-
-⚙️ Cara Penggunaan 
-....
-
-🤝 Kontribusi
-Selamat datang untuk semua kontribusi! Jika Anda memiliki saran atau menemukan bug, silakan:
-
-Fork repositori ini.
-
-📄 Lisensi
-Proyek ini dilisensikan di bawah Lisensi MIT
+- **Teknologi**:
+  - Offline-first: Semua data disimpan di `localStorage`.
+  - Tidak memerlukan backend atau database.
+  - Kompresi gambar menggunakan Canvas API.
+  - Font Poppins dari Google Fonts untuk estetika modern.
