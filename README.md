@@ -31,3 +31,22 @@
   - Tidak memerlukan backend atau database.
   - Kompresi gambar menggunakan Canvas API.
   - Font Poppins dari Google Fonts untuk estetika modern.
+
+ ## 📸 Tampilan Aplikasi
+
+Berikut adalah beberapa tangkapan layar (screenshot) untuk melihat bagaimana aplikasi ini bekerja:
+
+### Menu Catatan
+![Tampilan Catatan Aplikasi](screenshot/Catatan.png)
+
+### Menu Ringkasan
+![Tampilan Ringkasan](screenshot/Ringkasan.png)
+
+### Menu Atur
+![Tampilan Atur](screenshot/Atur.png)
+
+## ✨ Cara Pakai 
+
+klik link ini :
+[go go go](https://wicky14.github.io/budget/)
+
