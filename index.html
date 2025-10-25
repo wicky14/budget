@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Catatan Anggaran Sederhana 💰</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        :root {
+            --primary-color: #4CAF50; /* Green */
+            --secondary-color: #FF9800; /* Orange */
+            --background-color: #f4f7f6;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --income-color: #2196F3; /* Blue */
+            --expense-color: #F44336; /* Red */
+            --tab-height: 50px; 
+            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.08); /* Smoother, lighter shadow */
+            --shadow-deep: 0 8px 18px rgba(0, 0, 0, 0.15); /* Deeper shadow for main elements */
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-bottom: calc(var(--tab-height) + 10px + env(safe-area-inset-bottom)); 
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        /* --- TAB NAVIGATION (BOTTOM BAR) --- */
+        #tabs {
+            position: fixed; 
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            
+            background-color: var(--card-background);
+            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1); /* Clearer shadow */
+            height: var(--tab-height); 
+            
+            width: 100%;
+            max-width: 600px; 
+            margin: 0 auto;
+            box-sizing: border-box;
+            
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .tab-btn {
+            flex-grow: 1;
+            padding: 2px 5px; 
+            text-align: center;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 13px; 
+            font-weight: 500;
+            color: #777;
+            border-radius: 8px;
+            transition: all 0.2s ease-out; /* Added transition for smoother tap/hover */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            font-weight: 600;
+            /* Added subtle transform for active tab flair */
+            transform: scale(1.05); 
+        }
+
+        .tab-btn:hover {
+            color: var(--secondary-color);
+        }
+
+        .tab-btn span {
+            font-size: 1.2em; 
+            line-height: 1;
+            margin-bottom: 1px; 
+        }
+
+        /* --- View Management --- */
+        .view-content {
+            display: none; 
+            /* Added subtle animation for view switching */
+            opacity: 0; 
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .view-content.active {
+            display: block; 
+            opacity: 1;
+        }
+        
+        /* --- Input Form Styling --- */
+        #budget-form {
+            background-color: var(--card-background);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-deep);
+            margin-bottom: 30px;
+            border-left: 5px solid var(--primary-color);
+            transition: box-shadow 0.3s ease; /* Transition for visual feedback */
+        }
+
+        #budget-form:hover {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        input[type="text"], 
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        #amount {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); /* Added glow effect on focus */
+        }
+
+        /* Radio Buttons */
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+        }
+
+        .radio-group input[type="radio"] {
+            display: none;
+        }
+
+        .radio-group label {
+            background-color: #eee;
+            color: var(--text-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s, box-shadow 0.2s; /* Added box-shadow transition */
+            font-weight: 400;
+            user-select: none;
+        }
+
+        .radio-group input[type="radio"]:checked + label {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            transform: scale(1.05);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); /* Added small lift shadow */
+        }
+
+        button.submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s; /* Smoother button press */
+            box-shadow: 0 4px 8px rgba(255, 152, 0, 0.4);
+        }
+
+        button.submit-btn:hover {
+            background-color: #e68900;
+            transform: translateY(-3px); /* Noticeable lift */
+            box-shadow: 0 6px 12px rgba(255, 152, 0, 0.6);
+        }
+        
+        button.submit-btn:active {
+             transform: translateY(-1px); /* Push down slightly on click */
+        }
+
+        /* --- DAILY SUMMARY STYLING --- */
+        #daily-summary-box {
+            background-color: var(--card-background);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-light);
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px;
+            text-align: center;
+            border-top: 5px solid var(--secondary-color);
+        }
+
+        /* --- LIST & ITEM STYLING --- */
+        #notes-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .note-item {
+            background-color: var(--card-background);
+            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid;
+            transition: transform 0.2s ease-out, box-shadow 0.2s, opacity 0.3s; /* Added opacity for smooth delete */
+        }
+
+        .note-item:hover {
+            transform: translateY(-2px); /* Lifts the card */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .note-item.masuk {
+            border-left-color: var(--income-color);
+        }
+
+        .note-item.keluar {
+            border-left-color: var(--expense-color);
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 1.4em; /* Slightly larger icon */
+            cursor: pointer;
+            transition: color 0.2s, transform 0.1s;
+        }
+
+        .delete-btn:hover {
+            color: var(--expense-color);
+            transform: scale(1.1); /* Pop effect on hover */
+        }
+
+        /* --- MONTHLY SUMMARY STYLING --- */
+        #monthly-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .monthly-card {
+            background-color: var(--card-background);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-light);
+            margin-bottom: 15px;
+            border-left: 5px solid var(--secondary-color);
+            transition: transform 0.2s;
+        }
+
+        .monthly-card:hover {
+            transform: translateX(5px);
+        }
+
+
+        /* Remaining styles (unchanged but included for completeness) */
+        .summary-card p {
+            margin: 0;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #777;
+        }
+
+        .summary-amount {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        #daily-total-income .summary-amount {
+            color: var(--income-color);
+        }
+
+        #daily-total-expense .summary-amount {
+            color: var(--expense-color);
+        }
+        
+        #cumulative-balance {
+            grid-column: 1 / -1; 
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            margin-top: 10px;
+            margin-bottom: 25px; 
+            text-align: center;
+            box-shadow: var(--shadow-light);
+        }
+        
+        #cumulative-balance .summary-amount {
+             font-size: 1.5em;
+             color: white;
+        }
+        
+        .note-details {
+            flex-grow: 1;
+        }
+
+        .note-type {
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .note-amount {
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+
+        .note-amount.masuk {
+            color: var(--income-color);
+        }
+
+        .note-amount.keluar {
+            color: var(--expense-color);
+        }
+
+        .note-description {
+            font-size: 0.9em;
+            color: #777;
+        }
+        
+        #empty-message {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            background: var(--card-background);
+            border-radius: 10px;
+        }
+
+        .month-header {
+            font-weight: 700;
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            color: var(--text-color);
+            display: block;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .month-details div {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 1em;
+        }
+        
+        .month-details .balance {
+            font-weight: 700;
+            font-size: 1.1em;
+            padding-top: 8px;
+            border-top: 1px dashed #ddd;
+            margin-top: 5px;
+        }
+
+        .month-details .income { color: var(--income-color); }
+        .month-details .expense { color: var(--expense-color); }
+        .month-details .positive { color: var(--primary-color); }
+        .month-details .negative { color: var(--expense-color); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Catatan Anggaran 📝</h1>
+
+        <div id="daily-view" class="view-content active">
+
+            <form id="budget-form">
+                <div class="form-group">
+                    <label>Tipe Transaksi:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="masuk" name="type" value="masuk" required checked>
+                        <label for="masuk">Masuk (Pemasukan) ⬆️</label>
+
+                        <input type="radio" id="keluar" name="type" value="keluar" required>
+                        <label for="keluar">Keluar (Pengeluaran) ⬇️</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Tanggal Transaksi:</label>
+                    <input type="date" id="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount">Jumlah (Rp):</label>
+                    <input type="text" id="amount" placeholder="Contoh: 50.000" inputmode="numeric" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="note">Catatan Singkat:</label>
+                    <input type="text" id="note" placeholder="Contoh: Gaji bulan ini / Beli kopi" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Tambahkan Catatan ✨</button>
+            </form>
+
+            <div id="daily-summary-box">
+                <div id="daily-total-income" class="summary-card">
+                    <p>Total Pemasukan</p>
+                    <div class="summary-amount">Rp 0</div>
+                </div>
+                <div id="daily-total-expense" class="summary-card">
+                    <p>Total Pengeluaran</p>
+                    <div class="summary-amount">Rp 0</div>
+                </div>
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 25px;">
+                <label for="type-filter" style="margin-bottom: 0;">Filter Tipe:</label>
+                <select id="type-filter" style="flex-grow: 1; padding: 10px; border-radius: 8px;">
+                    <option value="all">Semua Tipe</option>
+                    <option value="masuk">Pemasukan (Masuk)</option>
+                    <option value="keluar">Pengeluaran (Keluar)</option>
+                </select>
+            </div>
+            
+            <h2>Daftar Catatan 👇</h2>
+            <p id="empty-message" style="display: none;">Belum ada catatan. Tambahkan satu di atas! 👆</p>
+            <ul id="notes-list">
+            </ul>
+        </div>
+        
+        <div id="monthly-summary-view" class="view-content">
+            
+            <div id="cumulative-balance" class="summary-card">
+                <p>Sisa Saldo Kumulatif</p>
+                <div class="summary-amount">Rp 0</div>
+            </div>
+
+            <button type="button" class="submit-btn" style="background-color: var(--primary-color); margin-bottom: 20px;" onclick="exportMonthlySummary()">
+                Ekspor ke CSV 💾
+            </button>
+            <h2>Ringkasan Transaksi 🗓️</h2>
+            <p id="monthly-empty-message" style="text-align: center; color: #999; padding: 20px; background: var(--card-background); border-radius: 10px; display: none;">Belum ada data untuk ringkasan bulanan.</p>
+            <ul id="monthly-list">
+                </ul>
+        </div>
+    </div>
+    
+    <div id="tabs">
+        <button class="tab-btn active" data-tab="daily-view">
+            <span>📝</span>
+            Catatan
+        </button>
+        <button class="tab-btn" data-tab="monthly-summary-view">
+            <span>📊</span>
+            Ringkasan
+        </button>
+    </div>
+    <script>
+        const form = document.getElementById('budget-form');
+        const notesList = document.getElementById('notes-list');
+        const emptyMessageDaily = document.getElementById('empty-message');
+        const monthlyList = document.getElementById('monthly-list');
+        const emptyMessageMonthly = document.getElementById('monthly-empty-message');
+        const dateInput = document.getElementById('date');
+        const amountInput = document.getElementById('amount'); 
+        const typeFilterSelect = document.getElementById('type-filter');
+
+        const totalIncomeEl = document.querySelector('#daily-total-income .summary-amount');
+        const totalExpenseEl = document.querySelector('#daily-total-expense .summary-amount');
+        const cumulativeBalanceEl = document.querySelector('#cumulative-balance .summary-amount');
+        const cumulativeBalanceCard = document.getElementById('cumulative-balance');
+
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const views = document.querySelectorAll('.view-content');
+
+        // Set default date to today's date on load
+        dateInput.valueAsDate = new Date();
+        typeFilterSelect.addEventListener('change', loadNotes);
+
+
+        /* ----------------------
+        |  HELPER FUNCTIONS
+        | ---------------------- */
+
+        /**
+         * Formats a number into Rupiah currency string (e.g., 50.000).
+         */
+        function formatRupiah(number) {
+            const absoluteNumber = Math.abs(number);
+            if (isNaN(absoluteNumber)) return '0';
+            return new Intl.NumberFormat('id-ID').format(absoluteNumber);
+        }
+        
+        /**
+         * Cleans a formatted string back to a raw number (e.g., "50.000" -> 50000).
+         */
+        function cleanAmount(formattedString) {
+            const cleanStr = String(formattedString).replace(/\D/g, ''); 
+            return parseInt(cleanStr || '0', 10);
+        }
+
+        /**
+         * Function to change the active tab/view.
+         */
+        function changeTab(tabId) {
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-tab') === tabId) {
+                    btn.classList.add('active');
+                }
+            });
+
+            views.forEach(view => {
+                view.classList.remove('active');
+            });
+            const activeView = document.getElementById(tabId);
+            if (activeView) {
+                setTimeout(() => {
+                    activeView.classList.add('active');
+                }, 10);
+            }
+            
+            loadNotes(); 
+        }
+
+
+        // Attach event listeners to tab buttons
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                changeTab(btn.getAttribute('data-tab'));
+            });
+        });
+
+        /* ----------------------
+        |  AMOUNT INPUT FORMATTING LOGIC
+        | ---------------------- */
+
+        amountInput.addEventListener('input', (e) => {
+            const cursorPosition = amountInput.selectionStart;
+            const oldValue = e.target.value;
+            const rawAmount = cleanAmount(oldValue);
+            const formattedValue = formatRupiah(rawAmount);
+
+            e.target.value = formattedValue;
+            
+            const diff = formattedValue.length - oldValue.length;
+            if (cursorPosition + diff >= 0) {
+                 amountInput.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+            }
+        });
+
+        amountInput.addEventListener('blur', (e) => {
+            const rawAmount = cleanAmount(e.target.value);
+            if (rawAmount > 0) {
+                e.target.value = formatRupiah(rawAmount);
+            } else {
+                 e.target.value = ''; 
+            }
+        });
+
+
+        /* ----------------------
+        |  VIEW AND DATA LOGIC 
+        | ---------------------- */
+
+        function updateDailySummary(allNotes) {
+            let totalIncome = 0;
+            let totalExpense = 0;
+
+            allNotes.forEach(note => {
+                if (note.type === 'masuk') {
+                    totalIncome += note.amount;
+                } else if (note.type === 'keluar') {
+                    totalExpense += note.amount;
+                }
+            });
+
+            const currentBalance = totalIncome - totalExpense;
+
+            totalIncomeEl.textContent = `Rp ${formatRupiah(totalIncome)}`;
+            totalExpenseEl.textContent = `Rp ${formatRupiah(totalExpense)}`;
+            
+            const balanceSign = currentBalance < 0 ? '-' : '';
+            cumulativeBalanceEl.textContent = `${balanceSign} Rp ${formatRupiah(currentBalance)}`;
+            
+            cumulativeBalanceCard.style.backgroundColor = currentBalance < 0 ? 'var(--expense-color)' : 'var(--primary-color)';
+        }
+
+        function createNoteElement(note) {
+            const listItem = document.createElement('li');
+            listItem.className = `note-item ${note.type}`;
+            listItem.dataset.id = note.id;
+
+            const typeLabel = note.type === 'masuk' ? 'Pemasukan' : 'Pengeluaran';
+            const sign = note.type === 'masuk' ? '+' : '-';
+
+            const transactionDate = note.date ? new Date(note.date) : new Date(note.id); 
+
+            listItem.innerHTML = `
+                <div class="note-details">
+                    <div class="note-type">${typeLabel} (${transactionDate.toLocaleDateString('id-ID')})</div>
+                    <div class="note-amount ${note.type}">${sign} Rp ${formatRupiah(note.amount)}</div>
+                    <div class="note-description">${note.note}</div>
+                </div>
+                <button class="delete-btn" onclick="deleteNote('${note.id}')" title="Hapus Catatan">
+                    ✖️
+                </button>
+            `;
+            return listItem;
+        }
+
+        function calculateMonthlySummary(notes) {
+            const monthlyData = {};
+
+            notes.forEach(note => {
+                const date = new Date(note.date || note.id); 
+                
+                const year = date.getFullYear();
+                const month = (date.getMonth() + 1).toString().padStart(2, '0'); 
+                const monthKey = `${year}-${month}`;
+
+                if (!monthlyData[monthKey]) {
+                    monthlyData[monthKey] = { income: 0, expense: 0 };
+                }
+
+                if (note.type === 'masuk') {
+                    monthlyData[monthKey].income += note.amount;
+                } else {
+                    monthlyData[monthKey].expense += note.amount;
+                }
+            });
+
+            return monthlyData;
+        }
+
+        function renderMonthlySummary(monthlyData) {
+            monthlyList.innerHTML = '';
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            
+            const monthKeys = Object.keys(monthlyData).sort().reverse(); 
+
+            if (monthKeys.length === 0) {
+                emptyMessageMonthly.style.display = 'block';
+                return;
+            }
+            emptyMessageMonthly.style.display = 'none';
+
+            monthKeys.forEach(key => {
+                const [year, monthIndex] = key.split('-');
+                const monthName = monthNames[parseInt(monthIndex, 10) - 1];
+                const data = monthlyData[key];
+                const balance = data.income - data.expense;
+
+                const listItem = document.createElement('li');
+                listItem.className = 'monthly-card';
+                listItem.innerHTML = `
+                    <span class="month-header">${monthName} ${year}</span>
+                    <div class="month-details">
+                        <div>
+                            <span>Pemasukan:</span>
+                            <span class="income">+ Rp ${formatRupiah(data.income)}</span>
+                        </div>
+                        <div>
+                            <span>Pengeluaran:</span>
+                            <span class="expense">- Rp ${formatRupiah(data.expense)}</span>
+                        </div>
+                        <div class="balance">
+                            <span>**Saldo Bulan Ini:**</span>
+                            <span class="${balance >= 0 ? 'positive' : 'negative'}">${balance >= 0 ? '+' : ''} Rp ${formatRupiah(balance)}</span>
+                        </div>
+                    </div>
+                `;
+                monthlyList.appendChild(listItem);
+            });
+        }
+
+        function loadNotes() {
+            const notesJSON = localStorage.getItem('budgetNotes');
+            const allNotes = notesJSON ? JSON.parse(notesJSON) : [];
+            
+            // Filter Tipe
+            const typeFilter = typeFilterSelect.value;
+            let notesToDisplay = allNotes;
+            if (typeFilter !== 'all') {
+                notesToDisplay = allNotes.filter(note => note.type === typeFilter);
+            }
+
+            notesToDisplay.sort((a, b) => new Date(b.date || b.id) - new Date(a.date || a.id)); 
+            
+            notesList.innerHTML = ''; 
+            if (notesToDisplay.length === 0) {
+                emptyMessageDaily.style.display = 'block';
+            } else {
+                emptyMessageDaily.style.display = 'none';
+                notesToDisplay.forEach(note => {
+                    notesList.appendChild(createNoteElement(note));
+                });
+            }
+            
+            updateDailySummary(allNotes); 
+
+            const monthlyData = calculateMonthlySummary(allNotes);
+            renderMonthlySummary(monthlyData);
+        }
+
+        function saveNote(newNote) {
+            const notesJSON = localStorage.getItem('budgetNotes');
+            const notes = notesJSON ? JSON.parse(notesJSON) : [];
+            notes.push(newNote);
+            localStorage.setItem('budgetNotes', JSON.stringify(notes));
+        }
+        
+        window.deleteNote = function(id) {
+            if (!confirm('Hapus Transaksi? Tindakan ini tidak dapat dibatalkan.')) {
+                return;
+            }
+
+            const notesJSON = localStorage.getItem('budgetNotes');
+            let notes = notesJSON ? JSON.parse(notesJSON) : [];
+            
+            notes = notes.filter(note => note.id !== id);
+            
+            localStorage.setItem('budgetNotes', JSON.stringify(notes));
+            
+            const itemToDelete = document.querySelector(`.note-item[data-id="${id}"]`);
+            if (itemToDelete) {
+                itemToDelete.style.opacity = '0';
+                itemToDelete.style.transform = 'translateX(-100%)';
+                setTimeout(() => {
+                    loadNotes(); 
+                }, 250);
+            } else {
+                loadNotes();
+            }
+        }
+
+        /**
+         * Handles the form submission to add a new note.
+         */
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const amount = cleanAmount(amountInput.value); 
+            const noteText = document.getElementById('note').value.trim();
+            const transactionDate = dateInput.value;
+
+            if (amount <= 0 || noteText === '' || transactionDate === '') {
+                alert('Mohon isi semua kolom dengan benar (Jumlah harus lebih dari 0 dan tanggal harus dipilih).');
+                return;
+            }
+            
+            // Peringatan Saldo Negatif
+            const currentNotes = JSON.parse(localStorage.getItem('budgetNotes') || '[]');
+            const totalIncome = currentNotes.filter(n => n.type === 'masuk').reduce((sum, n) => sum + n.amount, 0);
+            const totalExpense = currentNotes.filter(n => n.type === 'keluar').reduce((sum, n) => sum + n.amount, 0);
+            const currentBalance = totalIncome - totalExpense;
+
+            if (type === 'keluar') {
+                const projectedBalance = currentBalance - amount;
+                const warningThreshold = -50000; 
+                
+                if (projectedBalance < warningThreshold) {
+                    const confirmed = confirm(`PERINGATAN! Transaksi ini akan membuat saldo Anda menjadi minus Rp ${formatRupiah(projectedBalance)}.\n\nAnda yakin ingin melanjutkan pencatatan pengeluaran ini?`);
+                    if (!confirmed) {
+                        return; 
+                    }
+                }
+            }
+
+            const newNote = {
+                id: Date.now().toString(), 
+                type: type,
+                amount: amount,
+                note: noteText,
+                date: new Date(transactionDate).toISOString() 
+            };
+
+            saveNote(newNote);
+
+            // Clear the form and reset date/radio
+            form.reset();
+            document.getElementById('masuk').checked = true;
+            dateInput.valueAsDate = new Date();
+            amountInput.value = ''; 
+            typeFilterSelect.value = 'all';
+
+            loadNotes();
+            changeTab('daily-view'); 
+        });
+
+        /* ----------------------
+        |  EXPORT FEATURE LOGIC (FITUR BARU)
+        | ---------------------- */
+
+        window.exportMonthlySummary = function() {
+            const notesJSON = localStorage.getItem('budgetNotes');
+            const allNotes = notesJSON ? JSON.parse(notesJSON) : [];
+
+            if (allNotes.length === 0) {
+                alert("Tidak ada data transaksi untuk diekspor.");
+                return;
+            }
+
+            // Hitung ringkasan bulanan
+            const monthlyData = calculateMonthlySummary(allNotes);
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            
+            const monthKeys = Object.keys(monthlyData).sort().reverse(); 
+            
+            // 1. Buat Header CSV
+            let csvContent = "Bulan,Pemasukan (Rp),Pengeluaran (Rp),Saldo Bulan Ini (Rp)\n";
+
+            // 2. Isi Baris Data
+            monthKeys.forEach(key => {
+                const [year, monthIndex] = key.split('-');
+                const monthName = monthNames[parseInt(monthIndex, 10) - 1];
+                const data = monthlyData[key];
+                const balance = data.income - data.expense;
+
+                // Pastikan angka tidak memiliki separator ribuan untuk CSV
+                const incomeRaw = data.income;
+                const expenseRaw = data.expense;
+                const balanceRaw = balance;
+                
+                // Pisahkan dengan koma (,)
+                const line = `${monthName} ${year},${incomeRaw},${expenseRaw},${balanceRaw}\n`;
+                csvContent += line;
+            });
+
+            // 3. Buat Blob dan Link Unduhan
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            
+            // Tentukan nama file
+            const dateStamp = new Date().toISOString().substring(0, 10);
+            link.setAttribute("href", URL.createObjectURL(blob));
+            link.setAttribute("download", `RingkasanAnggaran_${dateStamp}.csv`);
+            
+            // Tambahkan dan klik link secara otomatis untuk memicu unduhan
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert("Data ringkasan berhasil diekspor ke CSV!");
+        }
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+             loadNotes();
+             // Manually set initial view to apply active styles and opacity transition
+             const initialView = document.getElementById('daily-view');
+             if (initialView) {
+                 initialView.classList.add('active');
+             }
+        });
+    </script>
+
+</body>
+</html>
