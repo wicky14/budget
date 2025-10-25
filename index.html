@@ -16,8 +16,8 @@
             --income-color: #2196F3; /* Blue */
             --expense-color: #F44336; /* Red */
             --tab-height: 50px; 
-            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.08); /* Smoother, lighter shadow */
-            --shadow-deep: 0 8px 18px rgba(0, 0, 0, 0.15); /* Deeper shadow for main elements */
+            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.08); 
+            --shadow-deep: 0 8px 18px rgba(0, 0, 0, 0.15); 
         }
 
         body {
@@ -188,12 +188,18 @@
             user-select: none;
         }
 
+        /* Masuk (default) color */
         .radio-group input[type="radio"]:checked + label {
             background-color: var(--primary-color);
             color: white;
             font-weight: 600;
             transform: scale(1.05);
             box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); 
+        }
+        
+        /* KELUAR color override */
+        #keluar:checked + label {
+            background-color: var(--expense-color);
         }
 
         button.submit-btn {
@@ -426,10 +432,10 @@
                     <label>Tipe Transaksi:</label>
                     <div class="radio-group">
                         <input type="radio" id="masuk" name="type" value="masuk" required checked>
-                        <label for="masuk">Masuk (Pemasukan) ⬆️</label>
+                        <label for="masuk">Masuk ⬆️</label>
 
                         <input type="radio" id="keluar" name="type" value="keluar" required>
-                        <label for="keluar">Keluar (Pengeluaran) ⬇️</label>
+                        <label for="keluar">Keluar ⬇️</label>
                     </div>
                 </div>
 
@@ -466,8 +472,8 @@
                 <label for="type-filter" style="margin-bottom: 0;">Filter Tipe:</label>
                 <select id="type-filter" style="flex-grow: 1; padding: 10px; border-radius: 8px;">
                     <option value="all">Semua Tipe</option>
-                    <option value="masuk">Pemasukan (Masuk)</option>
-                    <option value="keluar">Pengeluaran (Keluar)</option>
+                    <option value="masuk">Masuk</option>
+                    <option value="keluar">Keluar</option>
                 </select>
             </div>
             
@@ -835,7 +841,7 @@
                 const warningThreshold = -50000; 
                 
                 if (projectedBalance < warningThreshold) {
-                    const confirmed = confirm(`PERINGATAN! Transaksi ini akan membuat saldo Anda menjadi minus Rp ${formatRupiah(projectedBalance)}.\n\nAnda yakin ingin melanjutkan pencatatan pengeluaran ini?`);
+                    const confirmed = confirm(`PERINGATAN! Transaksi ini akan membuat saldo Anda menjadi minus Rp ${formatRupiah(Math.abs(projectedBalance))}.\n\nAnda yakin ingin melanjutkan pencatatan pengeluaran ini?`);
                     if (!confirmed) {
                         return; 
                     }
