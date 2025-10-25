@@ -37,13 +37,13 @@
 Berikut adalah beberapa tangkapan layar (screenshot) untuk melihat bagaimana aplikasi ini bekerja:
 
 ### Menu Catatan
-![Tampilan Catatan Aplikasi](screenshot/Catatan.png)
+![Tampilan Catatan Aplikasi](screenshots/Catatan.png)
 
 ### Menu Ringkasan
-![Tampilan Ringkasan](screenshot/Ringkasan.png)
+![Tampilan Ringkasan](screenshots/Ringkasan.png)
 
 ### Menu Atur
-![Tampilan Atur](screenshot/Atur.png)
+![Tampilan Atur](screenshots/Atur.png)
 
 ## ✨ Cara Pakai 
 
