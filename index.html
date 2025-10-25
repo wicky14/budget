@@ -551,7 +551,7 @@
                 </div>
             </div>
 
-            <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 25px;">
+            <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
                 <label for="type-filter" style="margin-bottom: 0;">Filter Tipe:</label>
                 <select id="type-filter" style="flex-grow: 1; padding: 10px; border-radius: 8px;">
                     <option value="all">Semua Tipe</option>
@@ -560,6 +560,14 @@
                 </select>
             </div>
             
+            <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 25px;">
+                <label for="group-filter-daily" style="margin-bottom: 0;">Filter Grup:</label>
+                <select id="group-filter-daily" style="flex-grow: 1; padding: 10px; border-radius: 8px;">
+                    <option value="all">Semua Grup 🌍</option>
+                    <option value="bulanan">Bulanan Saja 🗓️</option>
+                    <option value="tabungan">Tabungan Saja 🏦</option>
+                </select>
+            </div>
             <h2>Daftar Catatan 👇</h2>
             <p id="empty-message" style="display: none;">Belum ada catatan. Tambahkan satu di atas! 👆</p>
             <ul id="notes-list">
@@ -701,6 +709,9 @@
         const monthlyGroupFilter = document.getElementById('group-filter-monthly'); 
         // Kunci localStorage untuk menyimpan state filter bulanan
         const MONTHLY_FILTER_STORAGE_KEY = 'monthlyGroupFilterState'; 
+        
+        // Filter Grup Harian (BARU)
+        const dailyGroupFilter = document.getElementById('group-filter-daily');
 
         const tabButtons = document.querySelectorAll('.tab-btn');
         const views = document.querySelectorAll('.view-content');
@@ -731,8 +742,12 @@
 
         dateInput.valueAsDate = new Date();
         typeFilterSelect.addEventListener('change', loadNotes);
+        
+        // Event Listener untuk Filter Grup Harian (BARU)
+        if(dailyGroupFilter) dailyGroupFilter.addEventListener('change', loadNotes);
+
         // Event Listener untuk Filter Grup Bulanan
-        monthlyGroupFilter.addEventListener('change', loadNotes); // Load notes ketika filter berubah
+        monthlyGroupFilter.addEventListener('change', loadNotes); 
 
         /* ----------------------
         |  HELPER FUNCTIONS
@@ -1136,13 +1151,24 @@
             const notesJSON = localStorage.getItem('budgetNotes');
             const allNotes = notesJSON ? JSON.parse(notesJSON) : [];
             
-            // SIMPAN STATE FILTER ke localStorage SETIAP KALI DIPANGGIL
+            // SIMPAN STATE FILTER BULANAN ke localStorage (LOGIKA LAMA)
             localStorage.setItem(MONTHLY_FILTER_STORAGE_KEY, monthlyGroupFilter.value); 
             
             const typeFilter = typeFilterSelect.value;
+            // Ambil nilai filter grup harian yang baru
+            const groupFilter = dailyGroupFilter ? dailyGroupFilter.value : 'all'; 
+
             let notesToDisplay = allNotes;
+            
+            // 1. Filter berdasarkan Tipe (Masuk/Keluar)
             if (typeFilter !== 'all') {
-                notesToDisplay = allNotes.filter(note => note.type === typeFilter);
+                notesToDisplay = notesToDisplay.filter(note => note.type === typeFilter);
+            }
+            
+            // 2. Filter berdasarkan Grup (Bulanan/Tabungan)
+            if (groupFilter !== 'all') {
+                 // Pastikan properti group ada, jika tidak, anggap 'bulanan' (default lama)
+                notesToDisplay = notesToDisplay.filter(note => (note.group || 'bulanan') === groupFilter);
             }
 
             notesToDisplay.sort((a, b) => parseInt(b.id) - parseInt(a.id));
@@ -1150,6 +1176,8 @@
             notesList.innerHTML = ''; 
             if (notesToDisplay.length === 0) {
                 emptyMessageDaily.style.display = 'block';
+                // Update pesan jika tidak ada catatan
+                emptyMessageDaily.textContent = `Tidak ada catatan untuk filter ${typeFilter === 'all' ? '' : typeFilter} / ${groupFilter === 'all' ? 'Semua Grup' : groupFilter === 'bulanan' ? 'Bulanan' : 'Tabungan'}.`;
             } else {
                 emptyMessageDaily.style.display = 'none';
                 notesToDisplay.forEach(note => {
