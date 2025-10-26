@@ -773,7 +773,7 @@
     </div>
     
     <div id="tabs">
-        <button class="tab-btn" data-tab="daily-view">
+        <button class="tab-btn active" data-tab="daily-view">
             <span>📝</span>
             Catatan
         </button>
@@ -781,7 +781,7 @@
             <span>📊</span>
             Ringkasan
         </button>
-        <button class="tab-btn active" data-tab="plan-view">
+        <button class="tab-btn" data-tab="plan-view">
             <span>🎯</span>
             Rencana
         </button>
@@ -1764,7 +1764,7 @@
         
         /**
          * UPDATED FUNCTION: Mengkompilasi dan membagikan SEMUA rencana ke WhatsApp dengan format ringkas.
-         * Diperbarui: Menggunakan daftar bernomor untuk detail pengeluaran.
+         * Diperbarui: Menambahkan daftar bernomor untuk detail pemasukan.
          */
         window.shareAllPlansToWa = function() {
             if (!storedWhatsappNumber || storedWhatsappNumber.length < 8) {
@@ -1782,13 +1782,16 @@
             
             let totalIncome = 0;
             let totalExpense = 0;
-            const expenseDetails = []; // Array untuk menyimpan detail pengeluaran
+            const incomeDetails = []; // NEW: Array untuk menyimpan detail pemasukan
+            const expenseDetails = []; 
 
-            plans.sort((a, b) => parseInt(b.id) - parseInt(a.id)); // Urutkan dari terbaru
+            plans.sort((a, b) => parseInt(b.id) - parseInt(a.id)); 
             
             plans.forEach(plan => {
                 if (plan.type === 'masuk') {
                     totalIncome += plan.amount;
+                    // NEW: Format detail pemasukan: Judul (+Rp Jumlah)
+                    incomeDetails.push(`${plan.note} (+Rp ${formatRupiah(plan.amount)})`); 
                 } else {
                     totalExpense += plan.amount;
                     // Format detail pengeluaran: Judul (-Rp Jumlah)
@@ -1796,12 +1799,22 @@
                 }
             });
 
-            // Membuat pesan dengan format baru yang menggunakan LIST BERNOMOR untuk pengeluaran
+            // NEW: Membuat pesan dengan format LIST BERNOMOR untuk pemasukan
+            let numberedIncomeList = '';
+            if (incomeDetails.length > 0) {
+                numberedIncomeList = incomeDetails.map((detail, index) => 
+                    `${index + 1}. ${detail}`
+                ).join('\n');
+            } else {
+                 numberedIncomeList = 'Tidak ada target pemasukan tercatat.';
+            }
+
+            // Membuat pesan dengan format LIST BERNOMOR untuk pengeluaran
             let numberedExpenseList = '';
             if (expenseDetails.length > 0) {
                 numberedExpenseList = expenseDetails.map((detail, index) => 
                     `${index + 1}. ${detail}`
-                ).join('\n'); // Menggabungkan detail menjadi beberapa baris dengan penomoran
+                ).join('\n'); 
             } else {
                  numberedExpenseList = 'Tidak ada target pengeluaran tercatat.';
             }
@@ -1809,9 +1822,11 @@
             const message = `*🎯 Daftar Rencana Anggaran*\n` +
                             `_Tanggal Laporan: ${new Date().toLocaleDateString('id-ID')}_\n\n` +
                             `=================================\n` +
-                            `💰 *TOTAL BUDGET (Target Masuk):* +Rp ${formatRupiah(totalIncome)}\n` +
+                            `💰 *TOTAL TARGET MASUK:* +Rp ${formatRupiah(totalIncome)}\n` +
                             `💸 *TOTAL TARGET PENGELUARAN:* -Rp ${formatRupiah(totalExpense)}\n` +
                             `=================================\n\n` +
+                            `*DETAIL RENCANA MASUK:*\n` + // NEW SECTION
+                            `${numberedIncomeList}\n\n` + 
                             `*DETAIL RENCANA KELUAR:*\n` +
                             `${numberedExpenseList}\n\n` +
                             `_Dibagikan dari Catatan Anggaran Sederhana_ 📝`;
@@ -2061,6 +2076,7 @@
             
             loadNotes();
             loadPlans(); // Load plans on unlock
+            changeTab('daily-view'); // Ensure daily-view is active after unlock
         }
 
         async function authenticateBiometric() {
@@ -2120,6 +2136,7 @@
                  monthlyGroupFilter.value = savedFilter;
              }
 
+             changeTab('daily-view'); // Set active tab on DOM load
              setTimeout(authenticateBiometric, 500); 
         });
     </script>
