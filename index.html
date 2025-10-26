@@ -15,6 +15,7 @@
             --text-color: #333;
             --income-color: #2196F3; /* Blue */
             --expense-color: #F44336; /* Red */
+            --plan-color: #9C27B0; /* Purple for Plan */
             --tab-height: 50px; 
             --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.08); 
             --shadow-deep: 0 8px 18px rgba(0, 0, 0, 0.15); 
@@ -118,7 +119,7 @@
         }
         
         /* --- Input Form Styling --- */
-        #budget-form {
+        #budget-form, #plan-form { /* Apply to both forms */
             background-color: var(--card-background);
             padding: 25px;
             border-radius: 15px;
@@ -128,7 +129,11 @@
             transition: box-shadow 0.3s ease; 
         }
 
-        #budget-form:hover {
+        #plan-form {
+            border-left-color: var(--plan-color);
+        }
+
+        #budget-form:hover, #plan-form:hover {
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
@@ -156,7 +161,7 @@
             transition: border-color 0.3s, box-shadow 0.3s;
         }
         
-        #amount {
+        #amount, #plan-amount {
             font-weight: 600;
             text-align: right;
         }
@@ -199,9 +204,15 @@
         }
         
         /* KELUAR color override */
-        #keluar:checked + label {
+        #keluar:checked + label, #plan-keluar:checked + label {
             background-color: var(--expense-color);
         }
+        
+        /* Plan Masuk color override */
+        #plan-masuk:checked + label {
+            background-color: var(--plan-color); 
+        }
+
 
         button.submit-btn {
             width: 100%;
@@ -235,7 +246,6 @@
             font-size: 0.9em;
             margin-top: 15px;
             cursor: pointer;
-            transition: color 0.2s;
             text-decoration: underline;
         }
         #reset-pin-btn:hover {
@@ -250,8 +260,8 @@
             transform: none !important;
         }
 
-        /* --- DAILY SUMMARY STYLING --- */
-        #daily-summary-box {
+        /* --- SUMMARY STYLING (Daily & Plan) --- */
+        #daily-summary-box, #plan-summary-box {
             background-color: var(--card-background);
             padding: 20px;
             border-radius: 15px;
@@ -264,74 +274,10 @@
             border-top: 5px solid var(--secondary-color);
         }
 
-        /* --- LIST & ITEM STYLING --- */
-        #notes-list {
-            list-style: none;
-            padding: 0;
+        #plan-summary-box {
+            border-top-color: var(--plan-color);
         }
-
-        .note-item {
-            background-color: var(--card-background);
-            margin-bottom: 12px;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: var(--shadow-light);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 5px solid;
-            transition: transform 0.2s ease-out, box-shadow 0.2s, opacity 0.3s; 
-        }
-
-        .note-item:hover {
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .note-item.masuk {
-            border-left-color: var(--income-color);
-        }
-
-        .note-item.keluar {
-            border-left-color: var(--expense-color);
-        }
-
-        .delete-btn {
-            background: none;
-            border: none;
-            color: #aaa;
-            font-size: 1.4em; 
-            cursor: pointer;
-            transition: color 0.2s, transform 0.1s;
-        }
-
-        .delete-btn:hover {
-            color: var(--expense-color);
-            transform: scale(1.1); 
-        }
-
-        /* --- MONTHLY SUMMARY & SETTINGS STYLING --- */
-        #monthly-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .monthly-card {
-            background-color: var(--card-background);
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: var(--shadow-light);
-            margin-bottom: 15px;
-            border-left: 5px solid var(--secondary-color);
-            transition: transform 0.2s;
-        }
-
-        .monthly-card:hover {
-            transform: translateX(5px);
-        }
-
-
-        /* Remaining styles */
+        
         .summary-card p {
             margin: 0;
             font-size: 0.9em;
@@ -352,9 +298,79 @@
         #daily-total-expense .summary-amount {
             color: var(--expense-color);
         }
+
+        #plan-total-income .summary-amount {
+            color: var(--plan-color);
+        }
+
+        #plan-total-expense .summary-amount {
+            color: var(--expense-color);
+        }
+
+        /* --- LIST & ITEM STYLING (Daily & Plan) --- */
+        #notes-list, #plans-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .note-item, .plan-item {
+            background-color: var(--card-background);
+            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid;
+            transition: transform 0.2s ease-out, box-shadow 0.2s, opacity 0.3s; 
+        }
+
+        .note-item:hover, .plan-item:hover {
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .note-item.masuk {
+            border-left-color: var(--income-color);
+        }
+
+        .note-item.keluar {
+            border-left-color: var(--expense-color);
+        }
         
-        /* #cumulative-balance styles removed and integrated into new cumulative-summary-box */
+        /* Plan Item Colors */
+        .plan-item.masuk {
+            border-left-color: var(--plan-color);
+        }
+
+        .plan-item.keluar {
+            border-left-color: var(--expense-color);
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 1.4em; 
+            cursor: pointer;
+            transition: color 0.2s, transform 0.1s;
+        }
+
+        .delete-btn:hover {
+            color: var(--expense-color);
+            transform: scale(1.1); 
+        }
         
+        .note-amount.plan-masuk {
+            color: var(--plan-color);
+        }
+        
+        .note-amount.plan-keluar {
+            color: var(--expense-color);
+        }
+
+        /* Remaining list styles */
         .note-details {
             flex-grow: 1;
         }
@@ -389,13 +405,36 @@
             color: #777;
         }
         
-        #empty-message {
+        #empty-message, #plan-empty-message {
             text-align: center;
             color: #999;
             padding: 20px;
             background: var(--card-background);
             border-radius: 10px;
         }
+
+        /* --- MONTHLY SUMMARY & SETTINGS STYLING --- */
+        /* ... (CSS untuk monthly dan settings tetap sama) ... */
+        
+        #monthly-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .monthly-card {
+            background-color: var(--card-background);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-light);
+            margin-bottom: 15px;
+            border-left: 5px solid var(--secondary-color);
+            transition: transform 0.2s;
+        }
+
+        .monthly-card:hover {
+            transform: translateX(5px);
+        }
+
 
         .month-header {
             font-weight: 700;
@@ -520,7 +559,7 @@
                     <label for="group">Grup Transaksi:</label>
                     <select id="group" required>
                         <option value="bulanan">Uang Bulanan 🗓️</option>
-                        <option value="tabungan" selected>Tabungan 🏦</option>
+                        <option value="tabungan">Tabungan 🏦</option>
                     </select>
                 </div>
                 <div class="form-group" style="border: 1px dashed #ddd; padding: 10px; border-radius: 8px; margin-top: 20px;">
@@ -542,11 +581,11 @@
 
             <div id="daily-summary-box">
                 <div id="daily-total-income" class="summary-card">
-                    <p>Total Pemasukan</p>
+                    <p>Pemasukan Hari Ini</p> 
                     <div class="summary-amount">Rp 0</div>
                 </div>
                 <div id="daily-total-expense" class="summary-card">
-                    <p>Total Pengeluaran</p>
+                    <p>Pengeluaran Hari Ini</p>
                     <div class="summary-amount">Rp 0</div>
                 </div>
             </div>
@@ -620,6 +659,68 @@
                 </ul>
         </div>
         
+        <div id="plan-view" class="view-content">
+            <h2>Buat Rencana Anggaran 🎯</h2>
+            <p style="color: #777; margin-top: -10px; margin-bottom: 25px;">Catat target pemasukan atau pengeluaran khusus (misal: budget liburan, target pendapatan ekstra).</p>
+
+            <form id="plan-form">
+                <div class="form-group">
+                    <label>Tipe Target:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="plan-masuk" name="plan-type" value="masuk" required checked>
+                        <label for="plan-masuk">Target Masuk 📈</label>
+
+                        <input type="radio" id="plan-keluar" name="plan-type" value="keluar" required>
+                        <label for="plan-keluar">Target Keluar 📉</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="plan-date">Target Tanggal Selesai (Opsional):</label>
+                    <input type="date" id="plan-date">
+                </div>
+
+                <div class="form-group">
+                    <label for="plan-amount">Jumlah Target (Rp):</label>
+                    <input type="text" id="plan-amount" placeholder="Contoh: 5.000.000" inputmode="numeric" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="plan-note">Judul/Catatan Rencana:</label>
+                    <input type="text" id="plan-note" placeholder="Contoh: Budget Liburan Bali / Target Penjualan" required>
+                </div>
+                
+                <button type="submit" class="submit-btn" style="background-color: var(--plan-color); margin-top: 10px;">Simpan Rencana</button>
+                <button type="button" class="submit-btn" style="background-color: var(--expense-color); margin-top: 10px;" onclick="clearAllPlans()">
+                    Hapus Semua Rencana 🗑️
+                </button>
+            </form>
+
+            <div id="plan-summary-box">
+                <div id="plan-total-income" class="summary-card">
+                    <p>Total Target Masuk</p>
+                    <div class="summary-amount">Rp 0</div>
+                </div>
+                <div id="plan-total-expense" class="summary-card">
+                    <p>Total Target Keluar</p>
+                    <div class="summary-amount">Rp 0</div>
+                </div>
+            </div>
+
+            <h2>Daftar Rencana 👇</h2>
+            <button type="button" 
+                class="submit-btn share-wa-btn" 
+                id="share-all-plans-btn"
+                style="background-color: #25D366; margin-bottom: 25px;" 
+                onclick="shareAllPlansToWa()">
+                Bagikan Semua Rencana ke WA 💬
+            </button>
+            
+            <p id="plan-empty-message" style="display: none;">Belum ada rencana anggaran. Tambahkan satu di atas!</p>
+            <ul id="plans-list">
+            </ul>
+        </div>
+        
         <div id="settings-view" class="view-content">
             <h2>Pengaturan Data ⚙️</h2>
             <p style="color: #777; margin-top: -10px; margin-bottom: 25px;">Kelola dan migrasi data transaksi Anda.</p>
@@ -672,13 +773,17 @@
     </div>
     
     <div id="tabs">
-        <button class="tab-btn active" data-tab="daily-view">
+        <button class="tab-btn" data-tab="daily-view">
             <span>📝</span>
             Catatan
         </button>
         <button class="tab-btn" data-tab="monthly-summary-view">
             <span>📊</span>
             Ringkasan
+        </button>
+        <button class="tab-btn active" data-tab="plan-view">
+            <span>🎯</span>
+            Rencana
         </button>
         <button class="tab-btn" data-tab="settings-view">
             <span>⚙️</span>
@@ -696,21 +801,21 @@
         const typeFilterSelect = document.getElementById('type-filter');
         
         const groupInput = document.getElementById('group'); 
+        const LAST_GROUP_KEY = 'lastSelectedGroup'; // Kunci baru untuk menyimpan grup terakhir
 
         const totalIncomeEl = document.querySelector('#daily-total-income .summary-amount');
         const totalExpenseEl = document.querySelector('#daily-total-expense .summary-amount');
         
-        // Elemen Saldo Kumulatif Baru
+        // Elemen Saldo Kumulatif 
         const cumulativeTotalEl = document.querySelector('#cumulative-balance-total .summary-amount');
         const cumulativeBulananEl = document.querySelector('#cumulative-balance-bulanan .summary-amount');
         const cumulativeTabunganEl = document.querySelector('#cumulative-balance-tabungan .summary-amount');
         
         // Filter Grup Bulanan
         const monthlyGroupFilter = document.getElementById('group-filter-monthly'); 
-        // Kunci localStorage untuk menyimpan state filter bulanan
         const MONTHLY_FILTER_STORAGE_KEY = 'monthlyGroupFilterState'; 
         
-        // Filter Grup Harian (BARU)
+        // Filter Grup Harian
         const dailyGroupFilter = document.getElementById('group-filter-daily');
 
         const tabButtons = document.querySelectorAll('.tab-btn');
@@ -735,18 +840,29 @@
         const pinChangeForm = document.getElementById('pin-change-form'); 
         const resetPinBtn = document.getElementById('reset-pin-btn'); 
 
-        // NEW: WhatsApp elements
+        // WhatsApp elements
         const whatsappSettingForm = document.getElementById('whatsapp-setting-form');
         const whatsappNumberInput = document.getElementById('whatsapp-number');
         let storedWhatsappNumber = localStorage.getItem('whatsappNumber') || '';
+        
+        // ======================================
+        // Plan Elements
+        // ======================================
+        const planForm = document.getElementById('plan-form');
+        const plansList = document.getElementById('plans-list');
+        const planEmptyMessage = document.getElementById('plan-empty-message');
+        const planAmountInput = document.getElementById('plan-amount');
+        const planTotalIncomeEl = document.querySelector('#plan-total-income .summary-amount');
+        const planTotalExpenseEl = document.querySelector('#plan-total-expense .summary-amount');
+        const shareAllPlansBtn = document.getElementById('share-all-plans-btn'); 
+        // ======================================
+
 
         dateInput.valueAsDate = new Date();
         typeFilterSelect.addEventListener('change', loadNotes);
         
-        // Event Listener untuk Filter Grup Harian (BARU)
         if(dailyGroupFilter) dailyGroupFilter.addEventListener('change', loadNotes);
 
-        // Event Listener untuk Filter Grup Bulanan
         monthlyGroupFilter.addEventListener('change', loadNotes); 
 
         /* ----------------------
@@ -788,7 +904,12 @@
                 }, 10);
             }
             
-            loadNotes(); 
+            // Call specific loaders based on the active tab
+            if (tabId === 'daily-view' || tabId === 'monthly-summary-view') {
+                 loadNotes(); 
+            } else if (tabId === 'plan-view') {
+                 loadPlans();
+            }
         }
 
         tabButtons.forEach(btn => {
@@ -801,28 +922,34 @@
         |  INPUT & IMAGE LOGIC 
         | ---------------------- */
 
-        amountInput.addEventListener('input', (e) => {
-            const cursorPosition = amountInput.selectionStart;
-            const oldValue = e.target.value;
-            const rawAmount = cleanAmount(oldValue);
-            const formattedValue = formatRupiah(rawAmount);
+        amountInput.addEventListener('input', formatAmountInput);
+        amountInput.addEventListener('blur', blurAmountInput);
+        
+        planAmountInput.addEventListener('input', formatAmountInput); // Use same formatter for plan amount
+        planAmountInput.addEventListener('blur', blurAmountInput);   // Use same blur logic for plan amount
 
-            e.target.value = formattedValue;
+        function formatAmountInput(e) {
+             const cursorPosition = e.target.selectionStart;
+             const oldValue = e.target.value;
+             const rawAmount = cleanAmount(oldValue);
+             const formattedValue = formatRupiah(rawAmount);
+
+             e.target.value = formattedValue;
             
-            const diff = formattedValue.length - oldValue.length;
-            if (cursorPosition + diff >= 0) {
-                 amountInput.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
-            }
-        });
+             const diff = formattedValue.length - oldValue.length;
+             if (cursorPosition + diff >= 0) {
+                 e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+             }
+        }
 
-        amountInput.addEventListener('blur', (e) => {
+        function blurAmountInput(e) {
             const rawAmount = cleanAmount(e.target.value);
             if (rawAmount > 0) {
                 e.target.value = formatRupiah(rawAmount);
             } else {
                  e.target.value = ''; 
             }
-        });
+        }
 
         function compressImage(file, quality = 0.7) {
             return new Promise((resolve) => {
@@ -918,14 +1045,29 @@
         }
 
         /* ----------------------
-        |  SUMMARY & RENDER LOGIC
+        |  DAILY SUMMARY & RENDER LOGIC
         | ---------------------- */
 
+        function getTodayDateString() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = (today.getMonth() + 1).toString().padStart(2, '0');
+            const day = today.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
         function updateDailySummary(allNotes) {
             let totalIncome = 0;
             let totalExpense = 0;
+            
+            const todayDate = getTodayDateString(); 
 
-            allNotes.forEach(note => {
+            const todayNotes = allNotes.filter(note => {
+                const noteDate = (note.date || new Date(parseInt(note.id)).toISOString()).substring(0, 10);
+                return noteDate === todayDate;
+            });
+
+            todayNotes.forEach(note => {
                 if (note.type === 'masuk') {
                     totalIncome += note.amount;
                 } else if (note.type === 'keluar') {
@@ -933,11 +1075,10 @@
                 }
             });
 
-            const currentBalance = totalIncome - totalExpense;
-
             totalIncomeEl.textContent = `Rp ${formatRupiah(totalIncome)}`;
             totalExpenseEl.textContent = `Rp ${formatRupiah(totalExpense)}`;
         }
+
 
         function createNoteElement(note) {
             const listItem = document.createElement('li');
@@ -971,6 +1112,150 @@
             `;
             return listItem;
         }
+        
+        /* ----------------------
+        |  PLAN LIST LOGIC
+        | ---------------------- */
+
+        function getPlans() {
+             const plansJSON = localStorage.getItem('budgetPlans');
+             return plansJSON ? JSON.parse(plansJSON) : [];
+        }
+
+        function savePlan(newPlan) {
+            const plans = getPlans();
+            plans.push(newPlan);
+            localStorage.setItem('budgetPlans', JSON.stringify(plans));
+        }
+
+        function createPlanElement(plan) {
+            const listItem = document.createElement('li');
+            listItem.className = `plan-item ${plan.type}`;
+            listItem.dataset.id = plan.id;
+
+            const typeLabel = plan.type === 'masuk' ? 'Target Masuk' : 'Target Keluar';
+            const sign = plan.type === 'masuk' ? '+' : '-';
+            const dateLabel = plan.date ? new Date(plan.date).toLocaleDateString('id-ID') : 'Tidak Ditentukan';
+            
+            listItem.innerHTML = `
+                <div class="note-details">
+                    <div class="note-type">${typeLabel} (Target: ${dateLabel})</div>
+                    <div class="note-amount plan-${plan.type}">${sign} Rp ${formatRupiah(plan.amount)}</div>
+                    <div class="note-description">${plan.note}</div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                    <button class="delete-btn" onclick="deletePlan('${plan.id}')" title="Hapus Rencana">
+                        ✖️
+                    </button>
+                </div>
+            `;
+            return listItem;
+        }
+
+        function updatePlanSummary(allPlans) {
+            let totalIncome = 0;
+            let totalExpense = 0;
+
+            allPlans.forEach(plan => {
+                if (plan.type === 'masuk') {
+                    totalIncome += plan.amount;
+                } else if (plan.type === 'keluar') {
+                    totalExpense += plan.amount;
+                }
+            });
+
+            planTotalIncomeEl.textContent = `Rp ${formatRupiah(totalIncome)}`;
+            planTotalExpenseEl.textContent = `Rp ${formatRupiah(totalExpense)}`;
+        }
+
+        function loadPlans() {
+            const allPlans = getPlans();
+            allPlans.sort((a, b) => parseInt(b.id) - parseInt(a.id)); // Sort by newest first
+
+            plansList.innerHTML = '';
+            
+            // Logic untuk mengontrol status tombol "Bagikan Semua"
+            const isWhatsappSet = storedWhatsappNumber && storedWhatsappNumber.length >= 8;
+            
+            if (allPlans.length === 0) {
+                planEmptyMessage.style.display = 'block';
+                shareAllPlansBtn.disabled = true;
+                shareAllPlansBtn.textContent = "Tidak Ada Rencana Untuk Dibagikan";
+            } else {
+                planEmptyMessage.style.display = 'none';
+                allPlans.forEach(plan => {
+                    plansList.appendChild(createPlanElement(plan));
+                });
+                
+                shareAllPlansBtn.disabled = !isWhatsappSet;
+                shareAllPlansBtn.textContent = isWhatsappSet ? "Bagikan Semua Rencana ke WA 💬" : "Atur Nomor WA Dulu! (Tab Atur)";
+            }
+
+            updatePlanSummary(allPlans);
+        }
+        
+        window.deletePlan = function(id) {
+            if (!confirm('Hapus Rencana? Tindakan ini tidak dapat dibatalkan.')) {
+                return;
+            }
+
+            let plans = getPlans();
+            plans = plans.filter(plan => plan.id !== id);
+            
+            localStorage.setItem('budgetPlans', JSON.stringify(plans));
+            
+            const itemToDelete = document.querySelector(`.plan-item[data-id="${id}"]`);
+            if (itemToDelete) {
+                itemToDelete.style.opacity = '0';
+                itemToDelete.style.transform = 'translateX(-100%)';
+                setTimeout(loadPlans, 250);
+            } else {
+                loadPlans();
+            }
+        }
+        
+        window.clearAllPlans = function() {
+            if (confirm('Anda yakin ingin MENGHAPUS SEMUA RENCANA ANGGARAN?')) {
+                localStorage.removeItem('budgetPlans');
+                alert('Semua rencana anggaran telah dihapus!');
+                loadPlans();
+            }
+        }
+        
+        planForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const type = document.querySelector('input[name="plan-type"]:checked').value;
+            const amount = cleanAmount(planAmountInput.value); 
+            const noteText = document.getElementById('plan-note').value.trim();
+            const transactionDate = document.getElementById('plan-date').value;
+
+            if (amount <= 0 || noteText === '') {
+                alert('Mohon isi semua kolom Jumlah dan Catatan dengan benar.');
+                return;
+            }
+
+            const newPlan = {
+                id: Date.now().toString(), 
+                type: type,
+                amount: amount,
+                note: noteText,
+                date: transactionDate ? new Date(transactionDate).toISOString() : null,
+            };
+
+            savePlan(newPlan);
+
+            planForm.reset();
+            document.getElementById('plan-masuk').checked = true;
+            planAmountInput.value = ''; 
+
+            loadPlans();
+        });
+
+
+        /* ----------------------
+        |  MAIN LOAD & SAVE LOGIC
+        | ---------------------- */
 
         function calculateMonthlySummary(notes) {
             const monthlyData = {};
@@ -1009,28 +1294,23 @@
                 }
             });
 
-            // Urutkan key dari yang PALING LAMA ke yang PALING BARU (ASCENDING)
             const monthKeys = Object.keys(monthlyData).sort(); 
             
             let cumulativeTotalBalance = 0;
             let cumulativeBulananBalance = 0; 
             let cumulativeTabunganBalance = 0;
 
-            // Loop untuk menghitung saldo kumulatif
             monthKeys.forEach(key => {
                 const data = monthlyData[key];
                 
-                // Saldo Bulan Ini
                 const bulananBalanceBulanIni = data.bulananIncome - data.bulananExpense;
                 const tabunganBalanceBulanIni = data.tabunganIncome - data.tabunganExpense;
                 const totalBalanceBulanIni = data.income - data.expense;
 
-                // Hitung Kumulatif
                 cumulativeTotalBalance += totalBalanceBulanIni;
                 cumulativeBulananBalance += bulananBalanceBulanIni;
                 cumulativeTabunganBalance += tabunganBalanceBulanIni;
 
-                // Simpan nilai di objek data
                 data.totalBalanceBulanIni = totalBalanceBulanIni;
                 data.bulananBalanceBulanIni = bulananBalanceBulanIni;
                 data.tabunganBalanceBulanIni = tabunganBalanceBulanIni;
@@ -1046,10 +1326,8 @@
         function renderMonthlySummary(monthlyData) {
             monthlyList.innerHTML = '';
             
-            // Ambil nilai filter (Sudah dimuat dari localStorage di loadNotes)
-            const filterType = monthlyGroupFilter.value; // 'all', 'bulanan', atau 'tabungan'
+            const filterType = monthlyGroupFilter.value; 
 
-            // Urutkan key dari yang PALING BARU ke yang PALING LAMA (DESCENDING)
             const monthKeys = Object.keys(monthlyData).sort().reverse(); 
             
             if (monthKeys.length === 0) {
@@ -1070,7 +1348,6 @@
                 let saldoKumulatif = 0;
                 let groupLabel = '';
                 
-                // Tentukan data mana yang akan ditampilkan berdasarkan filter
                 if (filterType === 'all') {
                     incomeBulanIni = data.income;
                     expenseBulanIni = data.expense;
@@ -1091,9 +1368,7 @@
                     groupLabel = 'Grup Tabungan';
                 }
 
-                // Cek apakah data ini relevan dengan filter. Jika Pemasukan DAN Pengeluaran-nya NOL, lewati.
                 if (incomeBulanIni === 0 && expenseBulanIni === 0 && filterType !== 'all') {
-                    // Jika filter bukan 'all', dan tidak ada transaksi di grup ini, jangan tampilkan kartu bulan ini.
                     return; 
                 }
                 
@@ -1136,7 +1411,6 @@
                 monthlyList.appendChild(listItem);
             });
             
-            // Periksa kembali jika semua item disembunyikan oleh filter
             if (totalCardsRendered === 0 && monthKeys.length > 0) {
                  emptyMessageMonthly.style.display = 'block';
                  const currentGroup = filterType === 'bulanan' ? 'Bulanan 🗓️' : 'Tabungan 🏦';
@@ -1151,23 +1425,18 @@
             const notesJSON = localStorage.getItem('budgetNotes');
             const allNotes = notesJSON ? JSON.parse(notesJSON) : [];
             
-            // SIMPAN STATE FILTER BULANAN ke localStorage (LOGIKA LAMA)
             localStorage.setItem(MONTHLY_FILTER_STORAGE_KEY, monthlyGroupFilter.value); 
             
             const typeFilter = typeFilterSelect.value;
-            // Ambil nilai filter grup harian yang baru
             const groupFilter = dailyGroupFilter ? dailyGroupFilter.value : 'all'; 
 
             let notesToDisplay = allNotes;
             
-            // 1. Filter berdasarkan Tipe (Masuk/Keluar)
             if (typeFilter !== 'all') {
                 notesToDisplay = notesToDisplay.filter(note => note.type === typeFilter);
             }
             
-            // 2. Filter berdasarkan Grup (Bulanan/Tabungan)
             if (groupFilter !== 'all') {
-                 // Pastikan properti group ada, jika tidak, anggap 'bulanan' (default lama)
                 notesToDisplay = notesToDisplay.filter(note => (note.group || 'bulanan') === groupFilter);
             }
 
@@ -1176,7 +1445,6 @@
             notesList.innerHTML = ''; 
             if (notesToDisplay.length === 0) {
                 emptyMessageDaily.style.display = 'block';
-                // Update pesan jika tidak ada catatan
                 emptyMessageDaily.textContent = `Tidak ada catatan untuk filter ${typeFilter === 'all' ? '' : typeFilter} / ${groupFilter === 'all' ? 'Semua Grup' : groupFilter === 'bulanan' ? 'Bulanan' : 'Tabungan'}.`;
             } else {
                 emptyMessageDaily.style.display = 'none';
@@ -1189,28 +1457,22 @@
 
             const monthlyData = calculateMonthlySummary(allNotes);
             
-            // ----------------------------------------
-            // LOGIKA PISAH SALDO KUMULATIF AKHIR (TANPA FILTER)
-            // ----------------------------------------
             const latestMonthKey = Object.keys(monthlyData).sort().pop();
             const latestData = monthlyData[latestMonthKey];
 
             if (latestData) {
-                // Total Keseluruhan
                 const total = latestData.cumulativeTotalBalance;
                 const totalColor = total < 0 ? 'var(--expense-color)' : 'var(--primary-color)';
                 cumulativeTotalEl.textContent = `${total < 0 ? '-' : ''} Rp ${formatRupiah(total)}`;
                 cumulativeTotalEl.style.color = totalColor;
                 document.getElementById('cumulative-balance-total').style.borderColor = totalColor;
                 
-                // Hanya Bulanan
                 const bulanan = latestData.cumulativeBulananBalance;
                 const bulananColor = bulanan < 0 ? 'var(--expense-color)' : '#FF9800';
                 cumulativeBulananEl.textContent = `${bulanan < 0 ? '-' : ''} Rp ${formatRupiah(bulanan)}`;
                 cumulativeBulananEl.style.color = bulananColor;
                 document.getElementById('cumulative-balance-bulanan').style.borderColor = bulananColor;
 
-                // Hanya Tabungan
                 const tabungan = latestData.cumulativeTabunganBalance;
                 const tabunganColor = tabungan < 0 ? 'var(--expense-color)' : '#2196F3';
                 cumulativeTabunganEl.textContent = `${tabungan < 0 ? '-' : ''} Rp ${formatRupiah(tabungan)}`;
@@ -1222,15 +1484,13 @@
                 cumulativeBulananEl.textContent = 'Rp 0';
                 cumulativeTabunganEl.textContent = 'Rp 0';
                 
-                // Reset warna default jika tidak ada data
                 cumulativeTotalEl.style.color = 'var(--primary-color)';
                 document.getElementById('cumulative-balance-total').style.borderColor = 'var(--primary-color)';
-                cumulativeBulananEl.style.color = '#FF9800';
+                cumulativeBulunanEl.style.color = '#FF9800';
                 document.getElementById('cumulative-balance-bulanan').style.borderColor = '#FF9800';
                 cumulativeTabunganEl.style.color = '#2196F3';
                 document.getElementById('cumulative-balance-tabungan').style.borderColor = '#2196F3';
             }
-            // ----------------------------------------
 
             renderMonthlySummary(monthlyData);
         }
@@ -1240,6 +1500,9 @@
             const notes = notesJSON ? JSON.parse(notesJSON) : [];
             notes.push(newNote);
             localStorage.setItem('budgetNotes', JSON.stringify(notes));
+            
+            // Simpan grup terakhir yang dipilih
+            localStorage.setItem(LAST_GROUP_KEY, newNote.group);
         }
         
         window.deleteNote = function(id) {
@@ -1311,7 +1574,6 @@
 
             form.reset();
             document.getElementById('masuk').checked = true;
-            document.getElementById('group').value = 'tabungan'; // <-- DEFAULT BARU: tabungan
             dateInput.valueAsDate = new Date();
             amountInput.value = ''; 
             typeFilterSelect.value = 'all';
@@ -1372,13 +1634,27 @@
 
         window.exportRawData = function() {
             const notesJSON = localStorage.getItem('budgetNotes');
-            const allNotes = notesJSON ? JSON.parse(notesJSON) : [];
-
-            if (allNotes.length === 0) {
+            const plansJSON = localStorage.getItem('budgetPlans'); // Export plans as well
+            
+            const exportData = {
+                notes: notesJSON ? JSON.parse(notesJSON) : [],
+                plans: plansJSON ? JSON.parse(plansJSON) : [],
+                metadata: {
+                     whatsappNumber: localStorage.getItem('whatsappNumber'),
+                     appPin: localStorage.getItem('appPin'),
+                     lastSelectedGroup: localStorage.getItem(LAST_GROUP_KEY), // Export last selected group
+                     timestamp: new Date().toISOString()
+                }
+            };
+            
+            if (exportData.notes.length === 0 && exportData.plans.length === 0) {
+                alert("Tidak ada data yang dapat diekspor.");
                 return null; 
             }
+            
+            const exportJSON = JSON.stringify(exportData, null, 2);
 
-            const blob = new Blob([notesJSON], { type: 'application/json' });
+            const blob = new Blob([exportJSON], { type: 'application/json' });
             const link = document.createElement("a");
             const dateStamp = new Date().toISOString().substring(0, 10);
             
@@ -1393,16 +1669,14 @@
                  alert("Data mentah (JSON) berhasil diekspor! Gunakan file ini untuk Impor data di perangkat lain.");
             }
 
-            return notesJSON;
+            return exportJSON;
         }
 
         window.importRawData = function(event) {
             const file = event.target.files[0];
-            if (!file) {
-                return;
-            }
+            if (!file) return;
 
-            if (!confirm('PERINGATAN! Impor data akan MENIMPA SEMUA data transaksi yang ada saat ini. Lanjutkan?')) {
+            if (!confirm('PERINGATAN! Impor data akan MENIMPA SEMUA data transaksi dan rencana yang ada saat ini. Lanjutkan?')) {
                 event.target.value = ''; 
                 return;
             }
@@ -1410,15 +1684,36 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const importedNotes = JSON.parse(e.target.result);
+                    const importedData = JSON.parse(e.target.result);
                     
-                    if (!Array.isArray(importedNotes) || (importedNotes.length > 0 && !importedNotes[0].id)) {
+                    if (typeof importedData !== 'object' || !importedData.notes) {
                         throw new Error("Struktur file JSON tidak valid.");
                     }
                     
-                    localStorage.setItem('budgetNotes', JSON.stringify(importedNotes));
-                    alert(`Data (${importedNotes.length} catatan) berhasil diimpor dan menimpa data lama!`);
+                    localStorage.setItem('budgetNotes', JSON.stringify(importedData.notes));
+                    
+                    if (importedData.plans) {
+                         localStorage.setItem('budgetPlans', JSON.stringify(importedData.plans));
+                    }
+                    
+                    // Impor metadata opsional
+                    if (importedData.metadata && importedData.metadata.whatsappNumber) {
+                         localStorage.setItem('whatsappNumber', importedData.metadata.whatsappNumber);
+                         storedWhatsappNumber = importedData.metadata.whatsappNumber;
+                         if (whatsappNumberInput) whatsappNumberInput.value = storedWhatsappNumber;
+                    }
+                    if (importedData.metadata && importedData.metadata.appPin) {
+                         localStorage.setItem('appPin', importedData.metadata.appPin);
+                    }
+                    if (importedData.metadata && importedData.metadata.lastSelectedGroup) { // Impor last selected group
+                         localStorage.setItem(LAST_GROUP_KEY, importedData.metadata.lastSelectedGroup);
+                         groupInput.value = importedData.metadata.lastSelectedGroup;
+                    }
+                    
+
+                    alert(`Data (${importedData.notes.length} catatan dan ${importedData.plans ? importedData.plans.length : 0} rencana) berhasil diimpor dan menimpa data lama!`);
                     loadNotes();
+                    loadPlans();
                     changeTab('daily-view'); 
                 } catch (error) {
                     alert('Gagal mengimpor file. Pastikan file berformat JSON yang benar. Error: ' + error.message);
@@ -1430,10 +1725,17 @@
         }
 
         window.clearAllData = function() {
-            if (confirm('SANGAT PENTING: Anda yakin ingin MENGHAPUS SEMUA DATA TRANSAKSI Anda? Tindakan ini tidak dapat dibatalkan. Pastikan Anda sudah melakukan Ekspor (Backup)!')) {
+            if (confirm('SANGAT PENTING: Anda yakin ingin MENGHAPUS SEMUA DATA TRANSAKSI DAN RENCANA Anda? Tindakan ini tidak dapat dibatalkan. Pastikan Anda sudah melakukan Ekspor (Backup)!')) {
                 localStorage.removeItem('budgetNotes');
-                alert('Semua data transaksi telah dihapus!');
+                localStorage.removeItem('budgetPlans'); // Clear plans as well
+                localStorage.removeItem('whatsappNumber'); 
+                localStorage.removeItem(LAST_GROUP_KEY); // Clear last selected group
+                storedWhatsappNumber = '';
+                if (whatsappNumberInput) whatsappNumberInput.value = '';
+                
+                alert('Semua data transaksi dan rencana telah dihapus!');
                 loadNotes();
+                loadPlans();
                 changeTab('daily-view');
             }
         }
@@ -1455,15 +1757,76 @@
             localStorage.setItem('whatsappNumber', storedWhatsappNumber);
             alert('Nomor WhatsApp berhasil disimpan!');
             
+            // Re-render lists to update WA buttons
             loadNotes(); 
+            loadPlans(); 
         });
         
+        /**
+         * UPDATED FUNCTION: Mengkompilasi dan membagikan SEMUA rencana ke WhatsApp dengan format ringkas.
+         * Diperbarui: Menggunakan daftar bernomor untuk detail pengeluaran.
+         */
+        window.shareAllPlansToWa = function() {
+            if (!storedWhatsappNumber || storedWhatsappNumber.length < 8) {
+                alert('Nomor WhatsApp tujuan belum diatur. Silakan atur di tab "Atur" terlebih dahulu.');
+                changeTab('settings-view');
+                return;
+            }
+
+            const plans = getPlans();
+
+            if (plans.length === 0) {
+                alert('Tidak ada rencana anggaran yang tersimpan untuk dibagikan.');
+                return;
+            }
+            
+            let totalIncome = 0;
+            let totalExpense = 0;
+            const expenseDetails = []; // Array untuk menyimpan detail pengeluaran
+
+            plans.sort((a, b) => parseInt(b.id) - parseInt(a.id)); // Urutkan dari terbaru
+            
+            plans.forEach(plan => {
+                if (plan.type === 'masuk') {
+                    totalIncome += plan.amount;
+                } else {
+                    totalExpense += plan.amount;
+                    // Format detail pengeluaran: Judul (-Rp Jumlah)
+                    expenseDetails.push(`${plan.note} (-Rp ${formatRupiah(plan.amount)})`);
+                }
+            });
+
+            // Membuat pesan dengan format baru yang menggunakan LIST BERNOMOR untuk pengeluaran
+            let numberedExpenseList = '';
+            if (expenseDetails.length > 0) {
+                numberedExpenseList = expenseDetails.map((detail, index) => 
+                    `${index + 1}. ${detail}`
+                ).join('\n'); // Menggabungkan detail menjadi beberapa baris dengan penomoran
+            } else {
+                 numberedExpenseList = 'Tidak ada target pengeluaran tercatat.';
+            }
+
+            const message = `*🎯 Daftar Rencana Anggaran*\n` +
+                            `_Tanggal Laporan: ${new Date().toLocaleDateString('id-ID')}_\n\n` +
+                            `=================================\n` +
+                            `💰 *TOTAL BUDGET (Target Masuk):* +Rp ${formatRupiah(totalIncome)}\n` +
+                            `💸 *TOTAL TARGET PENGELUARAN:* -Rp ${formatRupiah(totalExpense)}\n` +
+                            `=================================\n\n` +
+                            `*DETAIL RENCANA KELUAR:*\n` +
+                            `${numberedExpenseList}\n\n` +
+                            `_Dibagikan dari Catatan Anggaran Sederhana_ 📝`;
+
+            const encodedMessage = encodeURIComponent(message);
+            const waUrl = `https://wa.me/${storedWhatsappNumber}?text=${encodedMessage}`;
+            
+            window.open(waUrl, '_blank');
+        }
+
         /**
          * Mengambil dan memformat detail transaksi untuk bulan tertentu.
          */
         function getMonthlyTransactionDetails(monthKey, notesInMonth) {
             
-            // Urutkan catatan berdasarkan tanggal dan ID (terbaru di atas)
             notesInMonth.sort((a, b) => {
                 const dateA = new Date(a.date || parseInt(a.id));
                 const dateB = new Date(b.date || parseInt(b.id));
@@ -1499,7 +1862,7 @@
             }
 
             const monthKey = buttonElement.getAttribute('data-month-key');
-            const filterType = buttonElement.getAttribute('data-filter-type'); // 'all', 'bulanan', atau 'tabungan'
+            const filterType = buttonElement.getAttribute('data-filter-type'); 
             
             const notesJSON = localStorage.getItem('budgetNotes');
             const allNotes = notesJSON ? JSON.parse(notesJSON) : [];
@@ -1538,7 +1901,6 @@
                 groupLabel = 'Grup Tabungan';
             }
             
-            // Filter catatan detail hanya untuk grup yang dipilih
             const filteredNotes = allNotes.filter(note => {
                 const noteGroup = note.group || 'bulanan';
                 const date = new Date(note.date || parseInt(note.id)); 
@@ -1555,7 +1917,6 @@
             const transactionDetails = getMonthlyTransactionDetails(monthKey, filteredNotes);
 
 
-            // Membuat pesan format
             const message = `*📊 Ringkasan Anggaran Bulan ${monthName} ${year} (${groupLabel})*\n\n` +
                             `➡️ *Pemasukan Bulan Ini:* +Rp ${formatRupiah(incomeBulanIni)}\n` +
                             `⬅️ *Pengeluaran Bulan Ini:* -Rp ${formatRupiah(expenseBulanIni)}\n` +
@@ -1569,7 +1930,6 @@
                             `=================================\n` +
                             `_Dibagikan dari Catatan Anggaran Sederhana_ 📝`;
 
-            // Membuat URL WhatsApp
             const encodedMessage = encodeURIComponent(message);
             const waUrl = `https://wa.me/${storedWhatsappNumber}?text=${encodedMessage}`;
             
@@ -1626,7 +1986,7 @@
             const confirmReset = confirm(
                 "PERINGATAN! Anda akan mereset PIN. Tindakan ini akan:\n" +
                 "1. **Mengekspor** data transaksi ke file backup JSON (untuk pengamanan data Anda).\n" +
-                "2. **Menghapus SEMUA** data transaksi yang ada (termasuk PIN lama) dari aplikasi.\n\n" +
+                "2. **Menghapus SEMUA** data transaksi dan rencana yang ada (termasuk PIN lama) dari aplikasi.\n\n" +
                 "Lanjutkan?"
             );
 
@@ -1637,13 +1997,14 @@
             exportRawData(); 
             
             localStorage.removeItem('budgetNotes');
+            localStorage.removeItem('budgetPlans'); // Clear plans on reset
             localStorage.removeItem('appPin'); 
-            localStorage.removeItem('whatsappNumber'); // Hapus juga nomor WA lama
+            localStorage.removeItem('whatsappNumber'); 
+            localStorage.removeItem(LAST_GROUP_KEY); // Clear last selected group on reset
 
             const newPin = generatePin();
             setPin(newPin);
             
-            // Reset WA input to clear 
             storedWhatsappNumber = '';
             if (whatsappNumberInput) whatsappNumberInput.value = '';
 
@@ -1688,7 +2049,18 @@
             authOverlay.style.display = 'none';
             appContainer.style.display = 'block';
             tabs.style.display = 'flex';
+            
+            // Set grup input setelah aplikasi dibuka
+            const lastGroup = localStorage.getItem(LAST_GROUP_KEY);
+            if (lastGroup && groupInput) {
+                 groupInput.value = lastGroup;
+            } else if (groupInput) {
+                 // Set nilai default jika belum ada
+                 groupInput.value = 'bulanan';
+            }
+            
             loadNotes();
+            loadPlans(); // Load plans on unlock
         }
 
         async function authenticateBiometric() {
@@ -1731,7 +2103,6 @@
 
         // --- Initial Load (Setup PIN & Start Auth) ---
         document.addEventListener('DOMContentLoaded', () => {
-             // 1. Setup PIN jika belum ada
              if (!getPin()) {
                 const defaultPin = generatePin();
                 setPin(defaultPin);
@@ -1739,14 +2110,11 @@
                 alert(`SELAMAT DATANG! Ini adalah PIN akses default Anda: ${defaultPin}\n\nCATAT PIN INI! Anda dapat mengubahnya di tab 'Atur'.`);
              }
              
-             // 2. Sembunyikan konten utama dan mulai autentikasi
              appContainer.style.display = 'none';
              tabs.style.display = 'none';
              
-             // 3. Load WA Number to Input
              if (whatsappNumberInput) whatsappNumberInput.value = storedWhatsappNumber;
              
-             // 4. Load Filter State
              const savedFilter = localStorage.getItem(MONTHLY_FILTER_STORAGE_KEY);
              if (savedFilter) {
                  monthlyGroupFilter.value = savedFilter;
