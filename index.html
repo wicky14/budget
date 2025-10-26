@@ -30,7 +30,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
+            min-height: 10vh;
             padding-bottom: calc(var(--tab-height) + 10px + env(safe-area-inset-bottom)); 
         }
 
@@ -414,7 +414,6 @@
         }
 
         /* --- MONTHLY SUMMARY & SETTINGS STYLING --- */
-        /* ... (CSS untuk monthly dan settings tetap sama) ... */
         
         #monthly-list {
             list-style: none;
@@ -499,13 +498,9 @@
 
     <div id="auth-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #f4f7f6; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
         <h2 style="color: var(--primary-color);">Akses Aplikasi Terkunci 🔒</h2>
-        <p id="auth-instruction" style="color: #666; margin-bottom: 30px;">Gunakan biometrik untuk membuka.</p>
+        <p id="auth-instruction" style="color: #666; margin-bottom: 30px;">Masukkan PIN 6 digit Anda untuk membuka aplikasi.</p>
         
-        <button id="biometric-auth-btn" style="padding: 15px 30px; background-color: var(--income-color); color: white; border: none; border-radius: 10px; font-size: 1.1em; cursor: pointer; box-shadow: 0 4px 8px rgba(33, 150, 243, 0.5);">
-            Ketuk untuk Autentikasi Biometrik 👆
-        </button>
-        
-        <div id="pin-input-container" style="display: none; margin-top: 20px; width: 80%; max-width: 350px; flex-wrap: wrap; justify-content: center;">
+        <div id="pin-input-container" style="margin-top: 20px; width: 80%; max-width: 350px; flex-wrap: wrap; justify-content: center; display: flex;">
             <div style="display: flex; width: 100%;">
                 <input type="password" id="pin-input" placeholder="Masukkan PIN 6 digit" maxlength="6" inputmode="numeric" style="padding: 10px; flex-grow: 1; text-align: center; font-size: 18px; border-radius: 8px 0 0 8px; border: 1px solid #ddd; border-right: none;">
                 <button id="pin-submit-btn" style="padding: 10px 20px; background-color: var(--secondary-color); color: white; border: none; border-radius: 0 8px 8px 0; margin-left: -1px; cursor: pointer;">
@@ -520,7 +515,7 @@
 
         <p id="auth-status" style="margin-top: 20px; color: var(--expense-color); font-weight: 600;">Status: Menunggu...</p>
         <p style="font-size: 0.8em; color: #aaa; max-width: 80%; margin-top: 20px;">
-            *Opsi PIN akan muncul jika Biometrik gagal. Reset PIN akan **menghapus semua data** transaksi Anda dan membuat PIN baru.
+            *Reset PIN akan **menghapus semua data** transaksi Anda dan membuat PIN baru. Pastikan Anda sudah membackup data.
         </p>
     </div>
     <div class="container">
@@ -599,13 +594,19 @@
                 </select>
             </div>
             
-            <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 25px;">
+            <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
                 <label for="group-filter-daily" style="margin-bottom: 0;">Filter Grup:</label>
                 <select id="group-filter-daily" style="flex-grow: 1; padding: 10px; border-radius: 8px;">
                     <option value="all">Semua Grup 🌍</option>
                     <option value="bulanan">Bulanan Saja 🗓️</option>
                     <option value="tabungan">Tabungan Saja 🏦</option>
                 </select>
+            </div>
+            
+            <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 25px;">
+                <label style="margin-bottom: 0; font-weight: 600;">Filter Tanggal:</label>
+                <input type="date" id="date-filter-daily-from" placeholder="Dari" style="flex-grow: 1; padding: 10px; border-radius: 8px;">
+                <input type="date" id="date-filter-daily-to" placeholder="Sampai" style="flex-grow: 1; padding: 10px; border-radius: 8px;">
             </div>
             <h2>Daftar Catatan 👇</h2>
             <p id="empty-message" style="display: none;">Belum ada catatan. Tambahkan satu di atas! 👆</p>
@@ -644,7 +645,7 @@
                 Ekspor Ringkasan Bulanan (CSV) 💾
             </button>
             
-            <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 25px;">
+            <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
                 <label for="group-filter-monthly" style="margin-bottom: 0; font-weight: 600;">Filter Grup:</label>
                 <select id="group-filter-monthly" style="flex-grow: 1; padding: 10px; border-radius: 8px;">
                     <option value="all">Semua Grup 🌍</option>
@@ -652,7 +653,12 @@
                     <option value="tabungan">Tabungan Saja 🏦</option>
                 </select>
             </div>
-
+            
+            <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 25px;">
+                <label style="margin-bottom: 0; font-weight: 600;">Filter Tanggal:</label>
+                <input type="date" id="date-filter-monthly-from" placeholder="Dari" style="flex-grow: 1; padding: 10px; border-radius: 8px;">
+                <input type="date" id="date-filter-monthly-to" placeholder="Sampai" style="flex-grow: 1; padding: 10px; border-radius: 8px;">
+            </div>
             <h2>Ringkasan Transaksi 🗓️</h2>
             <p id="monthly-empty-message" style="text-align: center; color: #999; padding: 20px; background: var(--card-background); border-radius: 10px; display: none;">Belum ada data untuk ringkasan bulanan.</p>
             <ul id="monthly-list">
@@ -708,6 +714,12 @@
             </div>
 
             <h2>Daftar Rencana 👇</h2>
+            
+            <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 25px;">
+                <label style="margin-bottom: 0; font-weight: 600;">Filter Tanggal Target:</label>
+                <input type="date" id="date-filter-plan-from" placeholder="Dari" style="flex-grow: 1; padding: 10px; border-radius: 8px;">
+                <input type="date" id="date-filter-plan-to" placeholder="Sampai" style="flex-grow: 1; padding: 10px; border-radius: 8px;">
+            </div>
             <button type="button" 
                 class="submit-btn share-wa-btn" 
                 id="share-all-plans-btn"
@@ -801,7 +813,7 @@
         const typeFilterSelect = document.getElementById('type-filter');
         
         const groupInput = document.getElementById('group'); 
-        const LAST_GROUP_KEY = 'lastSelectedGroup'; // Kunci baru untuk menyimpan grup terakhir
+        const LAST_GROUP_KEY = 'lastSelectedGroup'; 
 
         const totalIncomeEl = document.querySelector('#daily-total-income .summary-amount');
         const totalExpenseEl = document.querySelector('#daily-total-expense .summary-amount');
@@ -817,6 +829,19 @@
         
         // Filter Grup Harian
         const dailyGroupFilter = document.getElementById('group-filter-daily');
+        
+        // NEW: Daily Date Filters
+        const dailyDateFrom = document.getElementById('date-filter-daily-from');
+        const dailyDateTo = document.getElementById('date-filter-daily-to');
+
+        // NEW: Monthly Date Filters
+        const monthlyDateFrom = document.getElementById('date-filter-monthly-from');
+        const monthlyDateTo = document.getElementById('date-filter-monthly-to');
+
+        // NEW: Plan Date Filters
+        const planDateFrom = document.getElementById('date-filter-plan-from');
+        const planDateTo = document.getElementById('date-filter-plan-to');
+
 
         const tabButtons = document.querySelectorAll('.tab-btn');
         const views = document.querySelectorAll('.view-content');
@@ -827,9 +852,8 @@
         const captureImageBtn = document.getElementById('capture-image-btn');
         let currentImageBase64 = null; 
         
-        // Auth elements
+        // Auth elements (UPDATED: Removed biometric elements)
         const authOverlay = document.getElementById('auth-overlay');
-        const biometricAuthBtn = document.getElementById('biometric-auth-btn');
         const authStatus = document.getElementById('auth-status');
         const authInstruction = document.getElementById('auth-instruction');
         const pinInputContainer = document.getElementById('pin-input-container');
@@ -864,6 +888,15 @@
         if(dailyGroupFilter) dailyGroupFilter.addEventListener('change', loadNotes);
 
         monthlyGroupFilter.addEventListener('change', loadNotes); 
+        
+        // NEW: Event listeners for date filters
+        dailyDateFrom.addEventListener('change', loadNotes);
+        dailyDateTo.addEventListener('change', loadNotes);
+        monthlyDateFrom.addEventListener('change', loadNotes);
+        monthlyDateTo.addEventListener('change', loadNotes);
+        planDateFrom.addEventListener('change', loadPlans);
+        planDateTo.addEventListener('change', loadPlans);
+
 
         /* ----------------------
         |  HELPER FUNCTIONS
@@ -917,6 +950,37 @@
                 changeTab(btn.getAttribute('data-tab'));
             });
         });
+        
+        /**
+         * Checks if a date string (YYYY-MM-DD) falls between the from/to date filters.
+         * @param {string} dateString - The note/plan date (e.g., "2024-10-25"). Can be null for plans.
+         * @param {string} fromDate - The start date filter (YYYY-MM-DD).
+         * @param {string} toDate - The end date filter (YYYY-MM-DD).
+         * @returns {boolean}
+         */
+        function isDateWithinRange(dateString, fromDate, toDate) {
+            if (!dateString) return true; // Always include if date is null/undefined (for optional plan date)
+
+            // Normalize noteDate to YYYY-MM-DD for accurate comparison
+            const noteDate = new Date(dateString.substring(0, 10)); 
+
+            // Check 'From' date
+            if (fromDate) {
+                const from = new Date(fromDate);
+                if (noteDate < from) return false;
+            }
+
+            // Check 'To' date
+            if (toDate) {
+                const to = new Date(toDate);
+                // Add one day to the 'To' date's timestamp to make the filter inclusive of the end date
+                to.setDate(to.getDate() + 1); 
+                if (noteDate >= to) return false;
+            }
+
+            return true;
+        }
+
 
         /* ----------------------
         |  INPUT & IMAGE LOGIC 
@@ -925,8 +989,8 @@
         amountInput.addEventListener('input', formatAmountInput);
         amountInput.addEventListener('blur', blurAmountInput);
         
-        planAmountInput.addEventListener('input', formatAmountInput); // Use same formatter for plan amount
-        planAmountInput.addEventListener('blur', blurAmountInput);   // Use same blur logic for plan amount
+        planAmountInput.addEventListener('input', formatAmountInput); 
+        planAmountInput.addEventListener('blur', blurAmountInput);   
 
         function formatAmountInput(e) {
              const cursorPosition = e.target.selectionStart;
@@ -1062,6 +1126,7 @@
             
             const todayDate = getTodayDateString(); 
 
+            // Calculate summary based on transactions recorded TODAY only, regardless of daily list filter
             const todayNotes = allNotes.filter(note => {
                 const noteDate = (note.date || new Date(parseInt(note.id)).toISOString()).substring(0, 10);
                 return noteDate === todayDate;
@@ -1170,20 +1235,30 @@
 
         function loadPlans() {
             const allPlans = getPlans();
-            allPlans.sort((a, b) => parseInt(b.id) - parseInt(a.id)); // Sort by newest first
+            
+            // --- PLAN DATE FILTER ---
+            const planFilterFrom = planDateFrom.value;
+            const planFilterTo = planDateTo.value;
+            
+            let plansToDisplay = allPlans.filter(plan => {
+                const planDateStr = plan.date ? plan.date.substring(0, 10) : null; 
+                return isDateWithinRange(planDateStr, planFilterFrom, planFilterTo);
+            });
+
+            plansToDisplay.sort((a, b) => parseInt(b.id) - parseInt(a.id)); // Sort by newest first
 
             plansList.innerHTML = '';
             
             // Logic untuk mengontrol status tombol "Bagikan Semua"
             const isWhatsappSet = storedWhatsappNumber && storedWhatsappNumber.length >= 8;
             
-            if (allPlans.length === 0) {
+            if (plansToDisplay.length === 0) {
                 planEmptyMessage.style.display = 'block';
                 shareAllPlansBtn.disabled = true;
                 shareAllPlansBtn.textContent = "Tidak Ada Rencana Untuk Dibagikan";
             } else {
                 planEmptyMessage.style.display = 'none';
-                allPlans.forEach(plan => {
+                plansToDisplay.forEach(plan => {
                     plansList.appendChild(createPlanElement(plan));
                 });
                 
@@ -1191,7 +1266,7 @@
                 shareAllPlansBtn.textContent = isWhatsappSet ? "Bagikan Semua Rencana ke WA 💬" : "Atur Nomor WA Dulu! (Tab Atur)";
             }
 
-            updatePlanSummary(allPlans);
+            updatePlanSummary(allPlans); // Summary is calculated from ALL plans
         }
         
         window.deletePlan = function(id) {
@@ -1414,7 +1489,7 @@
             if (totalCardsRendered === 0 && monthKeys.length > 0) {
                  emptyMessageMonthly.style.display = 'block';
                  const currentGroup = filterType === 'bulanan' ? 'Bulanan 🗓️' : 'Tabungan 🏦';
-                 emptyMessageMonthly.textContent = `Tidak ada transaksi tercatat untuk *${currentGroup}* pada periode yang ada.`;
+                 emptyMessageMonthly.textContent = `Tidak ada transaksi tercatat untuk *${currentGroup}* pada periode yang ada dengan filter tanggal saat ini.`;
             } else if (monthKeys.length === 0) {
                  emptyMessageMonthly.textContent = `Belum ada data untuk ringkasan bulanan.`;
             }
@@ -1429,6 +1504,10 @@
             
             const typeFilter = typeFilterSelect.value;
             const groupFilter = dailyGroupFilter ? dailyGroupFilter.value : 'all'; 
+            
+            // --- DAILY DATE FILTER (For the list displayed on 'daily-view') ---
+            const dailyFilterFrom = dailyDateFrom.value;
+            const dailyFilterTo = dailyDateTo.value;
 
             let notesToDisplay = allNotes;
             
@@ -1440,12 +1519,19 @@
                 notesToDisplay = notesToDisplay.filter(note => (note.group || 'bulanan') === groupFilter);
             }
 
+            // Apply daily date filter to the list
+            notesToDisplay = notesToDisplay.filter(note => {
+                const noteDateStr = note.date ? note.date.substring(0, 10) : new Date(parseInt(note.id)).toISOString().substring(0, 10);
+                return isDateWithinRange(noteDateStr, dailyFilterFrom, dailyFilterTo);
+            });
+
+
             notesToDisplay.sort((a, b) => parseInt(b.id) - parseInt(a.id));
             
             notesList.innerHTML = ''; 
             if (notesToDisplay.length === 0) {
                 emptyMessageDaily.style.display = 'block';
-                emptyMessageDaily.textContent = `Tidak ada catatan untuk filter ${typeFilter === 'all' ? '' : typeFilter} / ${groupFilter === 'all' ? 'Semua Grup' : groupFilter === 'bulanan' ? 'Bulanan' : 'Tabungan'}.`;
+                emptyMessageDaily.textContent = `Tidak ada catatan untuk filter ${typeFilter === 'all' ? '' : typeFilter} / ${groupFilter === 'all' ? 'Semua Grup' : groupFilter === 'bulanan' ? 'Bulanan' : 'Tabungan'} pada rentang tanggal ini.`;
             } else {
                 emptyMessageDaily.style.display = 'none';
                 notesToDisplay.forEach(note => {
@@ -1455,8 +1541,19 @@
             
             updateDailySummary(allNotes); 
 
-            const monthlyData = calculateMonthlySummary(allNotes);
+            // --- MONTHLY DATE FILTER (For the summary generation) ---
+            const monthlyFilterFrom = monthlyDateFrom.value;
+            const monthlyFilterTo = monthlyDateTo.value;
             
+            // Filter notes used for monthly summary calculation based on date range
+            let monthlySummaryNotes = allNotes.filter(note => {
+                const noteDateStr = note.date ? note.date.substring(0, 10) : new Date(parseInt(note.id)).toISOString().substring(0, 10);
+                return isDateWithinRange(noteDateStr, monthlyFilterFrom, monthlyFilterTo);
+            });
+
+            const monthlyData = calculateMonthlySummary(monthlySummaryNotes);
+            
+            // Update cumulative balance using the results from the *filtered* monthly data
             const latestMonthKey = Object.keys(monthlyData).sort().pop();
             const latestData = monthlyData[latestMonthKey];
 
@@ -1597,7 +1694,8 @@
                 return;
             }
 
-            const monthlyData = calculateMonthlySummary(allNotes);
+            // Export uses ALL notes, not the currently filtered monthlySummaryNotes
+            const monthlyData = calculateMonthlySummary(allNotes); 
             const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             
             const monthKeys = Object.keys(monthlyData).sort().reverse(); 
@@ -1772,8 +1870,9 @@
                 changeTab('settings-view');
                 return;
             }
-
-            const plans = getPlans();
+            
+            // Share all plans, not just the currently filtered ones
+            const plans = getPlans(); 
 
             if (plans.length === 0) {
                 alert('Tidak ada rencana anggaran yang tersimpan untuk dibagikan.');
@@ -1782,7 +1881,7 @@
             
             let totalIncome = 0;
             let totalExpense = 0;
-            const incomeDetails = []; // NEW: Array untuk menyimpan detail pemasukan
+            const incomeDetails = []; 
             const expenseDetails = []; 
 
             plans.sort((a, b) => parseInt(b.id) - parseInt(a.id)); 
@@ -1790,7 +1889,7 @@
             plans.forEach(plan => {
                 if (plan.type === 'masuk') {
                     totalIncome += plan.amount;
-                    // NEW: Format detail pemasukan: Judul (+Rp Jumlah)
+                    // Format detail pemasukan: Judul (+Rp Jumlah)
                     incomeDetails.push(`${plan.note} (+Rp ${formatRupiah(plan.amount)})`); 
                 } else {
                     totalExpense += plan.amount;
@@ -1799,7 +1898,7 @@
                 }
             });
 
-            // NEW: Membuat pesan dengan format LIST BERNOMOR untuk pemasukan
+            // Membuat pesan dengan format LIST BERNOMOR untuk pemasukan
             let numberedIncomeList = '';
             if (incomeDetails.length > 0) {
                 numberedIncomeList = incomeDetails.map((detail, index) => 
@@ -1825,7 +1924,7 @@
                             `💰 *TOTAL TARGET MASUK:* +Rp ${formatRupiah(totalIncome)}\n` +
                             `💸 *TOTAL TARGET PENGELUARAN:* -Rp ${formatRupiah(totalExpense)}\n` +
                             `=================================\n\n` +
-                            `*DETAIL RENCANA MASUK:*\n` + // NEW SECTION
+                            `*DETAIL RENCANA MASUK:*\n` + 
                             `${numberedIncomeList}\n\n` + 
                             `*DETAIL RENCANA KELUAR:*\n` +
                             `${numberedExpenseList}\n\n` +
@@ -1881,7 +1980,17 @@
             
             const notesJSON = localStorage.getItem('budgetNotes');
             const allNotes = notesJSON ? JSON.parse(notesJSON) : [];
-            const monthlyData = calculateMonthlySummary(allNotes);
+            
+            // Recalculate monthly data based on currently applied MONTHLY date filter
+            const monthlyFilterFrom = monthlyDateFrom.value;
+            const monthlyFilterTo = monthlyDateTo.value;
+            
+            let monthlySummaryNotes = allNotes.filter(note => {
+                const noteDateStr = note.date ? note.date.substring(0, 10) : new Date(parseInt(note.id)).toISOString().substring(0, 10);
+                return isDateWithinRange(noteDateStr, monthlyFilterFrom, monthlyFilterTo);
+            });
+            
+            const monthlyData = calculateMonthlySummary(monthlySummaryNotes);
             
             const data = monthlyData[monthKey];
             if (!data) return; 
@@ -1916,7 +2025,7 @@
                 groupLabel = 'Grup Tabungan';
             }
             
-            const filteredNotes = allNotes.filter(note => {
+            const filteredNotes = monthlySummaryNotes.filter(note => {
                 const noteGroup = note.group || 'bulanan';
                 const date = new Date(note.date || parseInt(note.id)); 
                 const noteYear = date.getFullYear();
@@ -1939,6 +2048,7 @@
                             `*Saldo Bulan Ini:* ${saldoBulanIni >= 0 ? '+' : ''}Rp ${formatRupiah(saldoBulanIni)}\n\n` +
                             
                             `*Saldo Kumulatif (${groupLabel}):* ${saldoKumulatif >= 0 ? '+' : ''}Rp ${formatRupiah(saldoKumulatif)}\n` +
+                            `*Rentang Tanggal di Ringkasan:* ${monthlyFilterFrom || 'Awal Data'} hingga ${monthlyFilterTo || 'Akhir Data'}\n` +
                             `=================================\n\n` +
                             
                             `${transactionDetails}\n` + 
@@ -1953,7 +2063,7 @@
 
 
         /* ----------------------
-        |  PIN MANAGEMENT & AUTHENTICATION LOGIC
+        |  PIN MANAGEMENT & AUTHENTICATION LOGIC (UPDATED)
         | ---------------------- */
 
         function generatePin() {
@@ -1972,14 +2082,7 @@
             localStorage.setItem('appPin', newPin);
         }
         
-        function switchToPinMode(message) {
-            authInstruction.textContent = message || "Biometrik gagal/dibatalkan. Masukkan PIN Anda.";
-            biometricAuthBtn.style.display = 'none';
-            pinInputContainer.style.display = 'flex';
-            pinInput.focus();
-            authStatus.textContent = "Mode PIN Cadangan Aktif"; 
-            authStatus.style.color = '#FF9800';
-        }
+        // Removed switchToPinMode function as PIN is now the default mode
 
         function validatePin() {
             const enteredPin = pinInput.value.trim();
@@ -2079,43 +2182,7 @@
             changeTab('daily-view'); // Ensure daily-view is active after unlock
         }
 
-        async function authenticateBiometric() {
-            if (!window.PublicKeyCredential) {
-                switchToPinMode("Browser Anda tidak mendukung Autentikasi Biometrik.");
-                return; 
-            }
-
-            authStatus.textContent = "Mencoba otentikasi biometrik...";
-            authStatus.style.color = 'var(--secondary-color)';
-            biometricAuthBtn.disabled = true;
-
-            try {
-                const challenge = new Uint8Array(32);
-                window.crypto.getRandomValues(challenge); 
-
-                const credentialRequestOptions = {
-                    challenge: challenge,
-                    allowCredentials: [], 
-                    timeout: 60000,
-                    userVerification: 'required', 
-                    rpId: window.location.hostname || 'localhost',
-                };
-
-                await navigator.credentials.get({
-                    publicKey: credentialRequestOptions
-                });
-
-                authStatus.textContent = "Autentikasi Berhasil! Membuka kunci...";
-                authStatus.style.color = 'var(--primary-color)';
-                setTimeout(unlockApp, 500);
-
-            } catch (error) {
-                console.error("Autentikasi Biometrik Gagal:", error);
-                biometricAuthBtn.disabled = false;
-                switchToPinMode();
-            }
-        }
-
+        // Removed authenticateBiometric function
 
         // --- Initial Load (Setup PIN & Start Auth) ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -2123,7 +2190,14 @@
                 const defaultPin = generatePin();
                 setPin(defaultPin);
                 
+                authInstruction.textContent = `PIN Akses Default Anda: ${defaultPin}. Silakan masukkan PIN di bawah untuk masuk.`;
+                authStatus.textContent = "PIN baru telah dibuat. Harap catat PIN ini!";
+                authStatus.style.color = 'var(--secondary-color)';
+                
                 alert(`SELAMAT DATANG! Ini adalah PIN akses default Anda: ${defaultPin}\n\nCATAT PIN INI! Anda dapat mengubahnya di tab 'Atur'.`);
+             } else {
+                authStatus.textContent = "Siap menerima PIN.";
+                authStatus.style.color = '#333';
              }
              
              appContainer.style.display = 'none';
@@ -2136,8 +2210,9 @@
                  monthlyGroupFilter.value = savedFilter;
              }
 
+             // Auto focus on PIN input when the overlay is shown
+             pinInput.focus();
              changeTab('daily-view'); // Set active tab on DOM load
-             setTimeout(authenticateBiometric, 500); 
         });
     </script>
 
